@@ -1,4 +1,4 @@
-import { InitialPlayerProperties } from "./constsAndInterfaces";
+import { InitialPlayerProperties } from "./models";
 import { Player } from "./game";
 import "./styles/style.css";
 

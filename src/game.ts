@@ -4,7 +4,7 @@ import {
   PressedKeys,
   Size,
   Velocity,
-} from "./constsAndInterfaces";
+} from "./models";
 
 const canvas = document.querySelector("canvas");
 const c = canvas?.getContext("2d");
