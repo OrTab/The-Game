@@ -1,20 +1,38 @@
+export enum Values {
+  DISTANCE_TO_WIN = 1000000,
+  X_DIFF = 4,
+  Y_DIFF = 15,
+  minXDiffBetweenPlatfrom = 400,
+  maxJumpsWhileInAir = 5,
+  numberOfFramesToMoveImage = 5,
+  numOfImages = 3,
+  numberOfPictureFrames = 11,
+}
+
 export interface Position {
   x: number;
   y: number;
 }
 
-export type Size = {
+export interface Size {
   width: number;
   height: number;
-};
+}
 
-export interface Velocity extends Position {}
+export interface Velocity {
+  x: number;
+  y: number;
+}
 
 type Pressed = { pressed: boolean };
-
 export interface PressedKeys {
   right: Pressed;
   left: Pressed;
+}
+export interface PlayerProperties {
+  position: Position;
+  size: Size;
+  color: string;
 }
 
 export const InitialPlayerProperties = {
@@ -23,14 +41,8 @@ export const InitialPlayerProperties = {
     y: 100,
   },
   size: {
-    width: 40,
-    height: 40,
+    width: 89,
+    height: 103,
   },
   color: "#673ab2",
 };
-
-export interface PlayerProperties {
-  position: Position;
-  size: Size;
-  color: string;
-}

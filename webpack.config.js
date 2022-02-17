@@ -4,9 +4,10 @@ module.exports = {
     mode: 'development',
     devtool: "inline-source-map",
     entry: {
-        main: "./src/main.ts",
+        main: "./src/game.ts",
     },
     output: {
+        publicPath:  './build',
         path: path.resolve(__dirname, './build'),
         filename: "game-bundle.js" // <--- Will be compiled to this single file
     },
@@ -22,7 +23,12 @@ module.exports = {
             {
                 test: /\.css$/i,
                 use: ["style-loader", "css-loader"],
-            }
+            },
+            {
+                test: /\.(png|svg|jpg|jpeg|gif)$/i,
+                type: 'asset/resource',
+                
+            },
         ]
     }
 };
