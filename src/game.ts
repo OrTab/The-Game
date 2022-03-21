@@ -99,11 +99,9 @@ class Canvas {
     const {
       position: { x, y },
       size: { width, height },
-      color,
     } = this.player;
 
     if (c && canvas) {
-      c.fillStyle = color;
       if (this.bothKeysPressed || this.keys.right.pressed) {
         this.playerImage = imgRight; 
       } else if (this.keys.left.pressed) this.playerImage = imgLeft;
@@ -126,9 +124,9 @@ class Canvas {
       /*  (this.keys.left.pressed || this.keys.right.pressed) &&
       !this.bothKeysPressed && */
       (this.velocity.y === 0 || this.velocity.y === 1) &&
-      numberOfFrames > Values.numberOfFramesToMoveImage
+      numberOfFrames > Values.NumberOfFramesToMovePlayerImage
     ) {
-      this.handleImage();
+      this.handlePlayerImage();
       numberOfFrames = 0;
     }
   }
@@ -174,7 +172,7 @@ class Canvas {
           this.velocity.x = -this.velocityXDiff;
         } else this.velocity.x = 0;
 
-        if (numberOfFramesForDistance > Values.numberOfFramesForDistance) {
+        if (numberOfFramesForDistance > Values.NumberOfFramesToIncreaseDistance) {
           this.handleDistance();
         }
 
@@ -224,7 +222,7 @@ class Canvas {
       Array(5)
         .fill("")
         .map(() => {
-          prevX = getRandomInt(prevX + Values.minXDiffBetweenPlatfrom, maxX);
+          prevX = getRandomInt(prevX + Values.MinXDiffBetweenPlatfrom, maxX);
           maxX += 500;
           const platform = new Platform(
             {
@@ -252,7 +250,7 @@ class Canvas {
     distance++;
     numberOfFramesForDistance = 0;
     if (
-      distance - Values.rangeToIncreaseSpeed ===
+      distance - Values.RangeToIncreaseSpeed ===
       lastDistanceToIncreaseSpeed
     ) {
       lastDistanceToIncreaseSpeed = distance;
@@ -271,7 +269,7 @@ class Canvas {
     switch (code) {
       case "ArrowUp":
       case "Space":
-        if (this.upCounter >= Values.maxJumpsWhileInAir) return;
+        if (this.upCounter >= Values.MaxJumpsWhileInAir) return;
         if (type === "keyup") {
           this.upCounter++;
           // console.log(`You have more ${Values.maxJumpsWhileInAir - this.upCounter} times to jump while air`);
@@ -301,10 +299,10 @@ class Canvas {
     }
   }
 
-  handleImage() {
+  handlePlayerImage() {
     this.imageCounter = this.counter * 89;
     this.counter++;
-    if (this.counter === Values.numberOfPictureFrames) this.counter = 0;
+    if (this.counter === Values.NumberOfPlayerImageFrames) this.counter = 0;
   }
 
   resize() {
@@ -364,7 +362,7 @@ export class Player extends Canvas {
 
 function initGame() {
   numOfLoadedImages++;
-  if (numOfLoadedImages === Values.numOfImages) {
+  if (numOfLoadedImages === Values.NumberOfImages) {
     const player = new Player(InitialPlayerProperties);
     window.addEventListener("keydown", player.handleOnKey.bind(player));
     window.addEventListener("keyup", player.handleOnKey.bind(player));
