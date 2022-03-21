@@ -9,26 +9,27 @@ export enum Values {
   NumberOfPlayerImageFrames = 11,
   RangeToIncreaseSpeed = 120,
 }
+
 export interface Position {
   x: number;
   y: number;
-}
-
-export interface Size {
-  width: number;
-  height: number;
 }
 
 export interface Velocity {
   x: number;
   y: number;
 }
+export interface Size {
+  width: number;
+  height: number;
+}
 
-type Pressed = { pressed: boolean };
+type Pressed = { isPressed: boolean };
 export interface PressedKeys {
   right: Pressed;
   left: Pressed;
 }
+
 export interface PlayerProperties {
   position: Position;
   size: Size;

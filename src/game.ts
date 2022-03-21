@@ -48,8 +48,8 @@ class Canvas {
     y: 10,
   };
   keys: PressedKeys = {
-    right: { pressed: false },
-    left: { pressed: false },
+    right: { isPressed: false },
+    left: { isPressed: false },
   };
   platforms: Platform[] = [];
   genericObjects: GenericObject[] = [];
@@ -63,17 +63,17 @@ class Canvas {
   }
 
   get bothKeysPressed() {
-    return this.keys.right.pressed && this.keys.left.pressed;
+    return this.keys.right.isPressed && this.keys.left.isPressed;
   }
 
   get canGoLeft() {
-    return this.keys.left.pressed && this.player.position.x > 100;
+    return this.keys.left.isPressed && this.player.position.x > 100;
   }
 
   get canGoRight() {
     return (
       canvas &&
-      this.keys.right.pressed &&
+      this.keys.right.isPressed &&
       this.player.position.x < canvas.width / 2 - this.player.size.width
     );
   }
@@ -102,9 +102,9 @@ class Canvas {
     } = this.player;
 
     if (c && canvas) {
-      if (this.bothKeysPressed || this.keys.right.pressed) {
+      if (this.bothKeysPressed || this.keys.right.isPressed) {
         this.playerImage = imgRight; 
-      } else if (this.keys.left.pressed) this.playerImage = imgLeft;
+      } else if (this.keys.left.isPressed) this.playerImage = imgLeft;
 
       c.drawImage(
         this.playerImage,
@@ -121,7 +121,7 @@ class Canvas {
     numberOfFrames++;
 
     if (
-      /*  (this.keys.left.pressed || this.keys.right.pressed) &&
+      /*  (this.keys.left.isPressed || this.keys.right.isPressed) &&
       !this.bothKeysPressed && */
       (this.velocity.y === 0 || this.velocity.y === 1) &&
       numberOfFrames > Values.NumberOfFramesToMovePlayerImage
@@ -284,16 +284,16 @@ class Canvas {
         break;
       case "ArrowRight":
         if (type === "keyup") {
-          this.keys.right.pressed = false;
+          this.keys.right.isPressed = false;
         } else {
-          this.keys.right.pressed = true;
+          this.keys.right.isPressed = true;
         }
         break;
       case "ArrowLeft":
         if (type === "keyup") {
-          this.keys.left.pressed = false;
+          this.keys.left.isPressed = false;
         } else {
-          this.keys.left.pressed = true;
+          this.keys.left.isPressed = true;
         }
         break;
     }
