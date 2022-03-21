@@ -1,9 +1,13 @@
-body{
-    margin: 0;
-    overflow: hidden;
+body {
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
-canvas{
-    background-color: rgb(250, 247, 242);
+canvas {
+  width: 100vw;
+  height: 100vh;
 }
-

@@ -1,14 +1,15 @@
 export enum Values {
   DISTANCE_TO_WIN = 1000000,
   X_DIFF = 4,
-  Y_DIFF = 15,
+  Y_DIFF = 20,
   minXDiffBetweenPlatfrom = 400,
-  maxJumpsWhileInAir = 5,
-  numberOfFramesToMoveImage = 5,
-  numOfImages = 3,
+  maxJumpsWhileInAir = 2,
+  numberOfFramesToMoveImage = 2,
+  numberOfFramesForDistance = 5,
+  numOfImages = 4,
   numberOfPictureFrames = 11,
+  rangeToIncreaseSpeed = 120,
 }
-
 export interface Position {
   x: number;
   y: number;
