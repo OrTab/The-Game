@@ -35,7 +35,7 @@ export enum Values {
   MaxJumpsWhileInAir = 2,
   NumberOfFramesToMovePlayerImage = 0,
   NumberOfFramesToIncreaseDistance = 4,
-  NumberOfImages = 7,
+  NumberOfTotalImagesInGame = 6,
   NumberOfFramesInPlayerRunImage = 30,
   NumberOfFramesInPlayerStandImage = 60,
   RangeToIncreaseSpeed = 30,

@@ -15,18 +15,19 @@ import {
 import { getRandomInt, createImage, sleep, runPolyfill } from './utils';
 import platform from './assets/platform.png';
 import background from './assets/background.png';
-import floor from './assets/floor.png';
+// import floor from './assets/floor.png';
 import spriteRunRight from './assets/spriteRunRight.png';
 import spriteRunLeft from './assets/spriteRunLeft.png';
 import spriteStandRight from './assets/spriteStandRight.png';
 import spriteStandLeft from './assets/spriteStandLeft.png';
+import SocketService from './services/SocketService';
 
 const playerRunImgRight = createImage(spriteRunRight, shouldInitGame);
 const playerRunImgLeft = createImage(spriteRunLeft, shouldInitGame);
 const playerStandImgLeft = createImage(spriteStandLeft, shouldInitGame);
 const playerStandImgRight = createImage(spriteStandRight, shouldInitGame);
 const backgroundImage = createImage(background, shouldInitGame);
-const floorImage = createImage(floor, shouldInitGame);
+// const floorImage = createImage(floor, shouldInitGame);
 const platformImage = createImage(platform, shouldInitGame);
 
 let numOfLoadedImages = 0;
@@ -73,6 +74,7 @@ class Game {
     });
     window.addEventListener('keydown', this.handleOnKey.bind(this));
     window.addEventListener('keyup', this.handleOnKey.bind(this));
+    SocketService.connect();
     this.resize(true);
     this.initObjects();
     this.animate();
@@ -93,9 +95,9 @@ class Game {
     return this.keys.right.isPressed && this.keys.left.isPressed;
   }
 
-  private get isLeftOrRightPressed() {
-    return this.keys.right.isPressed || this.keys.left.isPressed;
-  }
+  // private get isLeftOrRightPressed() {
+  //   return this.keys.right.isPressed || this.keys.left.isPressed;
+  // }
 
   private get noKeysPressed() {
     return !this.keys.left.isPressed && !this.keys.right.isPressed;
@@ -507,7 +509,7 @@ export class GenericObject {
 }
 function shouldInitGame() {
   numOfLoadedImages++;
-  if (numOfLoadedImages === Values.NumberOfImages) {
+  if (numOfLoadedImages === Values.NumberOfTotalImagesInGame) {
     initGame();
   }
 }
