@@ -1,0 +1,12 @@
+{
+    "ignore": [".git", "node_modules/", "dist/", "coverage/"],
+    "exec":"ts-node server.ts",
+    "watch": ["server/"],
+    "execMap": {
+      "ts": "node -r ts-node/register"
+    },
+    "env": {
+      "NODE_ENV": "development"
+    },
+    "ext": "js,json,ts"
+  }

@@ -20,7 +20,6 @@ import spriteRunRight from './assets/spriteRunRight.png';
 import spriteRunLeft from './assets/spriteRunLeft.png';
 import spriteStandRight from './assets/spriteStandRight.png';
 import spriteStandLeft from './assets/spriteStandLeft.png';
-import SocketService from './services/SocketService';
 
 const playerRunImgRight = createImage(spriteRunRight, shouldInitGame);
 const playerRunImgLeft = createImage(spriteRunLeft, shouldInitGame);
@@ -74,7 +73,6 @@ class Game {
     });
     window.addEventListener('keydown', this.handleOnKey.bind(this));
     window.addEventListener('keyup', this.handleOnKey.bind(this));
-    SocketService.connect();
     this.resize(true);
     this.initObjects();
     this.animate();
