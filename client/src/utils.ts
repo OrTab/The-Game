@@ -110,6 +110,6 @@ export const runPolyfill = () => {
   }
 
   if (!window.structuredClone) {
-    window.structuredClone = <T>(obj:T) => JSON.parse(JSON.stringify(obj));
+    window.structuredClone = <T>(obj: T) => JSON.parse(JSON.stringify(obj));
   }
 };
