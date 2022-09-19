@@ -1,6 +1,8 @@
 const hostname = '127.0.0.1';
 const port = 4000;
-import { app, server } from '@or-tab/my-server';
+import { noDep } from '@or-tab/my-server';
+const { app, server } = noDep();
+
 app.enableCorsForOrigins(['http://localhost:4001', 'https://localhost:4001']);
 
 // const net = require('net')
@@ -15,7 +17,12 @@ app.enableCorsForOrigins(['http://localhost:4001', 'https://localhost:4001']);
 //     console.log(data.toString());
 // })
 
-app.get('/', (req, res) => res.send({ msg: 'hey from server' }));
+app.get('/:nice', (req, res) => {
+  const { nice } = req.params;
+  res.send({
+    msg: `Hey its the nice server that sends you the id - ${nice}`,
+  });
+});
 
 server.listen(port, hostname);
 server.on('listening', () => {
