@@ -1,6 +1,6 @@
 # The-Game
 
-A multiplayer game based on canvas , server build on node framework i built (my-server)
+A multiplayer game based on canvas , server based on node framework i built (my-server)
 
 my-server is node framework i built with no dependencies.
 
