@@ -1,10 +1,10 @@
 const hostname = '127.0.0.1';
 const port = 4001;
-import { noDep, ICustomIncomingMessage as Request } from '@or-tab/my-server';
+import { noDep, Request } from '@or-tab/my-server';
 const { app, server } = noDep();
 import type { Socket } from 'net';
 
-app.enableCorsForOrigins(['http://localhost:4000', 'https://localhost:4000']);
+app.enableCorsForOrigins({ 'http://localhost:4000': ['*'] });
 
 export const handleWebSocketUpgrade = (req: Request, socket: Socket) => {
   const key = req.headers['sec-websocket-key'];

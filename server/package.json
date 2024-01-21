@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@or-tab/my-server": "^1.1.1",
+    "@or-tab/my-server": "^0.0.1",
     "ts-node": "^10.9.1"
   }
 }
