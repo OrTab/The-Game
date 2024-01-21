@@ -1,35 +1,47 @@
 const hostname = '127.0.0.1';
-const port = 4000;
-import { noDep } from '@or-tab/my-server';
+const port = 4001;
+import { noDep, ICustomIncomingMessage as Request } from '@or-tab/my-server';
 const { app, server } = noDep();
+import type { Socket } from 'net';
 
-app.enableCorsForOrigins(['http://localhost:4001', 'https://localhost:4001']);
+app.enableCorsForOrigins(['http://localhost:4000', 'https://localhost:4000']);
 
-// const net = require('net')
+export const handleWebSocketUpgrade = (req: Request, socket: Socket) => {
+  const key = req.headers['sec-websocket-key'];
+  const responseKey = generateWebSocketResponseKey(key);
+  const headers = [
+    'HTTP/1.1 101 Switching Protocols',
+    'Upgrade: websocket',
+    'Connection: Upgrade',
+    `Sec-WebSocket-Accept: ${responseKey}`,
+    '\r\n',
+  ];
 
-// const client = net.createConnection({ port: 4001 }, () => {
-//     // 'connect' listener.
-//     console.log('connected to server!');
-//     client.write('world!\r\n');
-// });
+  socket.write(headers.join('\r\n'));
 
-// client.on('data', (data) => {
-//     console.log(data.toString());
-// })
-
-app.get('/:nice', (req, res) => {
-  const { nice } = req.params;
-  res.send({
-    msg: `Hey its the nice server that sends you the id - ${nice}`,
+  socket.on('data', (data) => {
+    // Handle incoming WebSocket data
+    console.log(`Received data`, data);
   });
+
+  socket.on('end', () => {
+    // Handle WebSocket connection closing
+    console.log('WebSocket connection closed');
+  });
+};
+
+function generateWebSocketResponseKey(key) {
+  const magicString = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+  const sha1 = require('crypto').createHash('sha1');
+  sha1.update(key + magicString);
+  return sha1.digest('base64');
+}
+
+server.on('upgrade', (req: Request, socket: Socket) => {
+  handleWebSocketUpgrade(req, socket);
 });
 
 server.listen(port, hostname);
 server.on('listening', () => {
   console.log(`Server running at http://${hostname}:${port}/`);
-});
-
-server.on('upgrade', (req, socket) => {
-  console.log(req.headers);
-  console.log(req.headers.upgrade === 'websocket');
 });
