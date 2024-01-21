@@ -29,7 +29,7 @@ export interface IObjectCreationParams {
 export enum GameSettings {
   VelocityXDiff = 5,
   VelocityYDiff = 22,
-  Gravity = 1,
+  Gravity = 0.6,
   MinXDiffBetweenPlatform = 400,
   MinXDiffBetweenFloor = 250,
   MaxJumpsWhileInAir = 2,
@@ -43,8 +43,8 @@ export enum GameSettings {
   PlayerStandImageFrameWidth = 177,
   PlayerRunImageFrameHeight = 400,
   PlayerStandImageFrameHeight = 400,
-  InitialFloorMovementXDiff = 8,
-  InitialPlatformMovementXDiff = 8,
+  InitialFloorMovementXDiff = 4,
+  InitialPlatformMovementXDiff = 4,
 }
 
 export interface Position {
