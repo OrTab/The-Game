@@ -87,38 +87,3 @@ export interface IPlayer {
   size: Size;
   playerImage: IPlayerImage;
 }
-
-export const InitialPlayerProperties: IPlayer = {
-  position: {
-    x: 100,
-    y: 100,
-  },
-  size: {
-    width: 127.875,
-    height: 128,
-  },
-  playerImage: getPlayerImage(),
-};
-
-export function getPlayerImage(): IPlayerImage {
-  return {
-    run: {
-      image: null,
-      currPlayerImageFrame: 0,
-      currPlayerImageFramePosition: 0,
-      size: {
-        width: 127.875,
-        height: 128,
-      },
-    },
-    stand: {
-      image: null,
-      currPlayerImageFrame: 0,
-      currPlayerImageFramePosition: 0,
-      size: {
-        width: 127,
-        height: 128,
-      },
-    },
-  };
-}

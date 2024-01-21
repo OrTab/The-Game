@@ -5,13 +5,11 @@ import {
   Size,
   Values,
   Velocity,
-  InitialPlayerProperties,
   IPlayer,
   IObjectCreationParams,
   TGameObjectsType,
   TLastPressedKeys,
-  getPlayerImage,
-} from './models';
+} from './types';
 import { getRandomInt, createImage, sleep, runPolyfill } from './utils';
 import platform from './assets/platform.png';
 import background from './assets/background.png';
@@ -20,6 +18,8 @@ import spriteRunRight from './assets/spriteRunRight.png';
 import spriteRunLeft from './assets/spriteRunLeft.png';
 import spriteStandRight from './assets/spriteStandRight.png';
 import spriteStandLeft from './assets/spriteStandLeft.png';
+import SocketService from './services/SocketService';
+import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './contants';
 
 const playerRunImgRight = createImage(spriteRunRight, shouldInitGame);
 const playerRunImgLeft = createImage(spriteRunLeft, shouldInitGame);
@@ -73,6 +73,7 @@ class Game {
     });
     window.addEventListener('keydown', this.handleOnKey.bind(this));
     window.addEventListener('keyup', this.handleOnKey.bind(this));
+    SocketService.connect();
     this.resize(true);
     this.initObjects();
     this.animate();
@@ -514,9 +515,9 @@ function shouldInitGame() {
 
 function initGame() {
   const initialProperties = window.structuredClone<IPlayer>(
-    InitialPlayerProperties
+    INITIAL_PLAYER_PROPERTIES
   );
-  initialProperties.playerImage = getPlayerImage();
+  initialProperties.playerImage = getInitialPlayerImage();
   new Game(initialProperties);
 }
 
