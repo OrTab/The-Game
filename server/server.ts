@@ -1,6 +1,7 @@
 const hostname = '127.0.0.1';
 const port = 4001;
-import { noDep, Request } from '@or-tab/my-server';
+import { noDep } from '@or-tab/my-server';
+import { Request } from '@or-tab/my-server/lib/dist/types/types';
 const { app, server } = noDep();
 import type { Socket } from 'net';
 
