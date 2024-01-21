@@ -3,7 +3,7 @@ import {
   Position,
   PressedKeys,
   Size,
-  Values,
+  GameSettings,
   Velocity,
   IPlayer,
   IObjectCreationParams,
@@ -42,9 +42,9 @@ const gameOverModal = document.querySelector('.game-over') as HTMLDivElement;
 restartBtn.addEventListener('click', onRestart);
 
 class Game {
-  private velocityXDiff: number = Values.VelocityXDiff;
-  private velocityYDiff: number = Values.VelocityYDiff;
-  readonly gravity: number = Values.Gravity;
+  private velocityXDiff: number = GameSettings.VelocityXDiff;
+  private velocityYDiff: number = GameSettings.VelocityYDiff;
+  readonly gravity: number = GameSettings.Gravity;
   private jumpsCounter: number = 0;
   private player: IPlayer;
   private velocity: Velocity = {
@@ -63,8 +63,9 @@ class Game {
   private lastDistanceToIncreaseSpeed: number = 0;
   private distance: number = 0;
   private numberOfFramesToMovePlayerImage: number = 0;
-  private platformMovementXDiff: number = Values.InitialPlatformMovementXDiff;
-  private floorMovementXDiff: number = Values.InitialFloorMovementXDiff;
+  private platformMovementXDiff: number =
+    GameSettings.InitialPlatformMovementXDiff;
+  private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
 
   constructor(player: IPlayer) {
     this.player = player;
@@ -269,11 +270,11 @@ class Game {
       currentImage.currPlayerImageFramePosition,
       0,
       this.noKeysPressed
-        ? Values.PlayerStandImageFrameWidth
-        : Values.PlayerRunImageFrameWidth,
+        ? GameSettings.PlayerStandImageFrameWidth
+        : GameSettings.PlayerRunImageFrameWidth,
       this.noKeysPressed
-        ? Values.PlayerStandImageFrameHeight
-        : Values.PlayerRunImageFrameHeight,
+        ? GameSettings.PlayerStandImageFrameHeight
+        : GameSettings.PlayerRunImageFrameHeight,
       x,
       y,
       currentImage.size.height,
@@ -283,7 +284,7 @@ class Game {
     this.numberOfFramesToMovePlayerImage++;
     if (
       this.numberOfFramesToMovePlayerImage >
-      Values.NumberOfFramesToMovePlayerImage
+      GameSettings.NumberOfFramesToMovePlayerImage
     ) {
       this.handlePlayerImageFrame();
       this.numberOfFramesToMovePlayerImage = 0;
@@ -357,7 +358,7 @@ class Game {
       [type in TGameObjectsType]: () => GenericObject;
     } = {
       platform() {
-        minX = getRandomInt(minX + Values.MinXDiffBetweenPlatform, maxX);
+        minX = getRandomInt(minX + GameSettings.MinXDiffBetweenPlatform, maxX);
         maxX += 500;
         return new GenericObject(
           {
@@ -396,7 +397,7 @@ class Game {
     this.numberOfFramesToIncreaseDistance++;
     if (
       this.numberOfFramesToIncreaseDistance <
-        Values.NumberOfFramesToIncreaseDistance ||
+        GameSettings.NumberOfFramesToIncreaseDistance ||
       !this.atPositionToIncreaseSpeed
     ) {
       return;
@@ -404,7 +405,7 @@ class Game {
     this.distance++;
     this.numberOfFramesToIncreaseDistance = 0;
     if (
-      this.distance - Values.RangeToIncreaseSpeed ===
+      this.distance - GameSettings.RangeToIncreaseSpeed ===
       this.lastDistanceToIncreaseSpeed
     ) {
       this.lastDistanceToIncreaseSpeed = this.distance;
@@ -425,11 +426,11 @@ class Game {
       case false:
         playerImage.run.currPlayerImageFramePosition =
           playerImage.run.currPlayerImageFrame *
-          Values.PlayerRunImageFrameWidth;
+          GameSettings.PlayerRunImageFrameWidth;
         playerImage.run.currPlayerImageFrame++;
         if (
           playerImage.run.currPlayerImageFrame ===
-          Values.NumberOfFramesInPlayerRunImage
+          GameSettings.NumberOfFramesInPlayerRunImage
         ) {
           playerImage.run.currPlayerImageFrame = 0;
         }
@@ -437,11 +438,11 @@ class Game {
       case true:
         playerImage.stand.currPlayerImageFramePosition =
           playerImage.stand.currPlayerImageFrame *
-          Values.PlayerStandImageFrameWidth;
+          GameSettings.PlayerStandImageFrameWidth;
         playerImage.stand.currPlayerImageFrame++;
         if (
           playerImage.stand.currPlayerImageFrame ===
-          Values.NumberOfFramesInPlayerStandImage
+          GameSettings.NumberOfFramesInPlayerStandImage
         ) {
           playerImage.stand.currPlayerImageFrame = 0;
         }
@@ -454,7 +455,7 @@ class Game {
     switch (code) {
       case 'ArrowUp':
       case 'Space':
-        if (this.jumpsCounter >= Values.MaxJumpsWhileInAir) return;
+        if (this.jumpsCounter >= GameSettings.MaxJumpsWhileInAir) return;
         if (type === 'keydown') {
           this.jumpsCounter++;
           if (this.jumpsCounter > 0) velocityY -= 4;
@@ -508,7 +509,7 @@ export class GenericObject {
 }
 function shouldInitGame() {
   numOfLoadedImages++;
-  if (numOfLoadedImages === Values.NumberOfTotalImagesInGame) {
+  if (numOfLoadedImages === GameSettings.NumberOfTotalImagesInGame) {
     initGame();
   }
 }

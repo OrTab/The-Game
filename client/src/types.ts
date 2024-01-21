@@ -26,7 +26,7 @@ export interface IObjectCreationParams {
   type: TGameObjectsType;
 }
 
-export enum Values {
+export enum GameSettings {
   VelocityXDiff = 5,
   VelocityYDiff = 22,
   Gravity = 1,
