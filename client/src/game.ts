@@ -44,7 +44,7 @@ restartBtn.addEventListener('click', onRestart);
 class Game {
   private velocityXDiff: number = GameSettings.VelocityXDiff;
   private velocityYDiff: number = GameSettings.VelocityYDiff;
-  readonly gravity: number = GameSettings.Gravity;
+  private gravity: number = GameSettings.Gravity;
   private jumpsCounter: number = 0;
   private player: IPlayer;
   private velocity: Velocity = {
@@ -100,19 +100,20 @@ class Game {
   // }
 
   private get noKeysPressed() {
-    return !this.keys.left.isPressed && !this.keys.right.isPressed;
+    return false;
+    // return !this.keys.left.isPressed && !this.keys.right.isPressed;
   }
 
   private get canGoLeft() {
     return (
       this.keys.left.isPressed &&
       !this.bothKeysPressed &&
-      this.player.position.x > 100
+      this.player.position.x > 150
     );
   }
 
   private get atPositionToIncreaseSpeed() {
-    return this.player.position.x >= canvas.width / 1 / 2;
+    return this.player.position.x >= canvas.width / 1 / 2.5;
   }
 
   private get canGoRight() {
@@ -155,12 +156,16 @@ class Game {
   private animate() {
     requestAnimationId = requestAnimationFrame(this.animate.bind(this));
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    this.genericObjects.forEach((obj) => obj.draw());
+    this.drawObjects();
     this.handleFloor();
     this.handlePlatforms();
     this.handleDistance();
     this.updateVelocity();
     this.updatePlayerPosition();
+  }
+
+  private drawObjects() {
+    this.genericObjects.forEach((obj) => obj.draw());
   }
 
   private handleFloor() {
@@ -178,15 +183,17 @@ class Game {
         this.player.position.x -= this.floorMovementXDiff;
       }
 
-      const diff = this.keys.right.isPressed
-        ? -this.floorMovementXDiff
-        : this.keys.left.isPressed
-        ? +this.floorMovementXDiff - 1
-        : -this.floorMovementXDiff;
-      floor.position.x += diff;
+      floor.position.x -= this.getMovementDiff(this.floorMovementXDiff);
       floor.draw();
     });
     this.shouldAddMoreFloors();
+  }
+
+  private getMovementDiff(diff: number) {
+    if (this.bothKeysPressed) {
+      return diff;
+    }
+    return this.keys.left.isPressed ? -diff : diff;
   }
 
   private shouldAddMoreFloors() {
@@ -266,7 +273,7 @@ class Game {
     this.player.size = currentImage.size;
 
     ctx.drawImage(
-      currentImage.image || playerStandImgRight,
+      currentImage.image || playerRunImgRight,
       currentImage.currPlayerImageFramePosition,
       0,
       this.noKeysPressed
@@ -298,10 +305,11 @@ class Game {
     } = this.player;
 
     return (
-      position.y + height <= object.position.y &&
-      position.y + height + this.velocity.y >= object.position.y &&
-      position.x + width / 2 <= object.position.x + object.size.width &&
-      position.x + width / 2 >= object.position.x
+      Math.floor(position.y + height) <= object.position.y &&
+      Math.floor(position.y + height + this.velocity.y) >= object.position.y &&
+      Math.floor(position.x + width / 2) <=
+        object.position.x + object.size.width &&
+      Math.floor(position.x + width / 2) >= object.position.x
     );
   }
 
@@ -315,7 +323,7 @@ class Game {
           this.platforms.splice(idx, 1);
         }, 0);
       }
-      platform.position.x -= this.platformMovementXDiff;
+      platform.position.x -= this.getMovementDiff(this.platformMovementXDiff);
 
       if (this.checkIsOnObject(platform) && !this.keys.right.isPressed) {
         this.player.position.x -= this.platformMovementXDiff;
@@ -417,6 +425,7 @@ class Game {
       await sleep(500);
       this.platformMovementXDiff += 0.2;
       this.floorMovementXDiff += 0.2;
+      this.gravity += 0.01;
     }
   }
 
@@ -484,6 +493,7 @@ class Game {
     if (!isStartGame) {
       this.genericObjects[0].size.height = canvas.height;
       this.genericObjects[0].size.width = canvas.width;
+      this.drawObjects();
     }
   }
 }
