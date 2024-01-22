@@ -257,6 +257,7 @@ class Game {
     if (position.y > canvas.height || position.x + width < 0) {
       handleGameOver();
     }
+    SocketService.test(this.player.position);
     this.drawPlayer();
   }
 
