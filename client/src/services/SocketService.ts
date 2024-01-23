@@ -1,7 +1,14 @@
+import { EventBus } from './EventBus';
+
 class SocketService {
   private socket!: WebSocket;
   private isConnected = false;
-  connect() {
+  private eventBus: EventBus;
+
+  constructor() {
+    this.eventBus = new EventBus();
+  }
+  connect(updatePlayerPosition: (x: any) => void) {
     if (this.isConnected) {
       return;
     }
@@ -12,13 +19,15 @@ class SocketService {
     });
 
     this.socket.addEventListener('message', (ev) => {
-      console.log('Data from server', ev.data);
+      const playerPosition = JSON.parse(ev.data);
+      this.eventBus.emit('playerPosition', playerPosition);
     });
 
     this.socket.addEventListener('close', () => {
       console.log('Client connection closed');
       this.isConnected = false;
     });
+    this.eventBus.on('playerPosition', updatePlayerPosition);
   }
 
   test(data: any) {
