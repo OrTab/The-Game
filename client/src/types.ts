@@ -70,13 +70,13 @@ export interface PressedKeys {
 
 export type TLastPressedKeys = 'right' | 'left';
 
+type PlayerImageType = 'runRight' | 'runLeft' | 'standLeft' | 'standRight';
 interface TPlayerImage {
-  image: HTMLImageElement | null;
+  image: PlayerImageType;
   currPlayerImageFrame: number;
   currPlayerImageFramePosition: number;
   size: Size;
 }
-
 export interface IPlayerImage {
   run: TPlayerImage;
   stand: TPlayerImage;
@@ -86,4 +86,5 @@ export interface IPlayer {
   position: Position;
   size: Size;
   playerImage: IPlayerImage;
+  _id: string;
 }

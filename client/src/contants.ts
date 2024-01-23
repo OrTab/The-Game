@@ -10,12 +10,13 @@ export const INITIAL_PLAYER_PROPERTIES: IPlayer = {
     height: 128,
   },
   playerImage: getInitialPlayerImage(),
+  _id: crypto.randomUUID(),
 };
 
 export function getInitialPlayerImage(): IPlayerImage {
   return {
     run: {
-      image: null,
+      image: 'runRight',
       currPlayerImageFrame: 0,
       currPlayerImageFramePosition: 0,
       size: {
@@ -24,7 +25,7 @@ export function getInitialPlayerImage(): IPlayerImage {
       },
     },
     stand: {
-      image: null,
+      image: 'runRight',
       currPlayerImageFrame: 0,
       currPlayerImageFramePosition: 0,
       size: {
