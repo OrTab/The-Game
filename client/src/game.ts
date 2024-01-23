@@ -21,10 +21,13 @@ import spriteStandLeft from './assets/spriteStandLeft.png';
 import SocketService from './services/SocketService';
 import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './contants';
 
-const playerRunImgRight = createImage(spriteRunRight, shouldInitGame);
-const playerRunImgLeft = createImage(spriteRunLeft, shouldInitGame);
-const playerStandImgLeft = createImage(spriteStandLeft, shouldInitGame);
-const playerStandImgRight = createImage(spriteStandRight, shouldInitGame);
+const PLAYER_IMAGES = {
+  runRight: createImage(spriteRunRight, shouldInitGame),
+  runLeft: createImage(spriteRunLeft, shouldInitGame),
+  standLeft: createImage(spriteStandLeft, shouldInitGame),
+  standRight: createImage(spriteStandRight, shouldInitGame),
+} as const;
+
 const backgroundImage = createImage(background, shouldInitGame);
 // const floorImage = createImage(floor, shouldInitGame);
 const platformImage = createImage(platform, shouldInitGame);
@@ -64,19 +67,32 @@ class Game {
   private distance: number = 0;
   private numberOfFramesToMovePlayerImage: number = 0;
   private platformMovementXDiff: number =
+    GameSettings.InitialPlatformMovementXDiff -
     GameSettings.InitialPlatformMovementXDiff;
-  private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
+  private floorMovementXDiff: number =
+    GameSettings.InitialFloorMovementXDiff -
+    GameSettings.InitialFloorMovementXDiff;
+  private isMultiPlayerMatch: boolean = false;
+  flow: (() => void | Promise<void>)[];
 
-  constructor(player: IPlayer) {
+  constructor(player: IPlayer, isMultiPlayerMatch = false) {
     this.player = player;
+    this.isMultiPlayerMatch = isMultiPlayerMatch;
     window.addEventListener('resize', () => {
       this.resize(false);
     });
     window.addEventListener('keydown', this.handleOnKey.bind(this));
     window.addEventListener('keyup', this.handleOnKey.bind(this));
-    SocketService.connect();
     this.resize(true);
     this.initObjects();
+    this.flow = [
+      this.drawObjects,
+      this.handleFloor,
+      this.handlePlatforms,
+      this.handleDistance,
+      this.updateVelocity,
+      this.updatePlayerPosition,
+    ];
     this.animate();
   }
 
@@ -156,12 +172,7 @@ class Game {
   private animate() {
     requestAnimationId = requestAnimationFrame(this.animate.bind(this));
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    this.drawObjects();
-    this.handleFloor();
-    this.handlePlatforms();
-    this.handleDistance();
-    this.updateVelocity();
-    this.updatePlayerPosition();
+    this.flow.forEach((fn) => fn.call(this));
   }
 
   private drawObjects() {
@@ -237,13 +248,10 @@ class Game {
     const { playerImage } = this.player;
     if (this.noKeysPressed) {
       playerImage.stand.image =
-        this.lastPressedKey === 'right'
-          ? playerStandImgRight
-          : playerStandImgLeft;
+        this.lastPressedKey === 'right' ? 'runRight' : 'runLeft';
     } else if (this.bothKeysPressed || this.keys.right.isPressed) {
-      playerImage.run.image = playerRunImgRight;
-    } else if (this.keys.left.isPressed)
-      playerImage.run.image = playerRunImgLeft;
+      playerImage.run.image = 'runRight';
+    } else if (this.keys.left.isPressed) playerImage.run.image = 'runLeft';
   }
 
   private updatePlayerPosition() {
@@ -257,24 +265,24 @@ class Game {
     if (position.y > canvas.height || position.x + width < 0) {
       handleGameOver();
     }
-    SocketService.test(this.player.position);
+    if (this.isMultiPlayerMatch) {
+      SocketService.test(this.player);
+    }
     this.drawPlayer();
   }
 
-  private drawPlayer() {
+  drawPlayer(player?: IPlayer) {
     const {
       position: { x, y },
       playerImage,
-    } = this.player;
+    } = player || this.player;
 
     const currentImage = this.noKeysPressed
       ? playerImage.stand
       : playerImage.run;
 
-    this.player.size = currentImage.size;
-
     ctx.drawImage(
-      currentImage.image || playerRunImgRight,
+      PLAYER_IMAGES[currentImage.image] || PLAYER_IMAGES.runRight,
       currentImage.currPlayerImageFramePosition,
       0,
       this.noKeysPressed
@@ -288,7 +296,12 @@ class Game {
       currentImage.size.height,
       currentImage.size.width
     );
+    if (!player) {
+      this.updatePlayerImageFrames();
+    }
+  }
 
+  private updatePlayerImageFrames() {
     this.numberOfFramesToMovePlayerImage++;
     if (
       this.numberOfFramesToMovePlayerImage >
@@ -499,6 +512,29 @@ class Game {
   }
 }
 
+class MultiPlayerGame extends Game {
+  players: IPlayer[] = [];
+  constructor(player: IPlayer) {
+    super(player, true);
+    console.log('creating');
+    SocketService.connect(this.updatePlayersState.bind(this));
+    this.flow.push(this.drawPlayers.bind(this));
+  }
+
+  updatePlayersState(player: IPlayer) {
+    // this.players = this.players.map((_player) =>
+    //   _player._id === player._id ? player : _player
+    // );
+    this.players = [player];
+  }
+
+  drawPlayers() {
+    this.players.forEach((player) => {
+      this.drawPlayer(player);
+    });
+  }
+}
+
 export class GenericObject {
   position: Position;
   size: Size;
@@ -530,7 +566,11 @@ function initGame() {
     INITIAL_PLAYER_PROPERTIES
   );
   initialProperties.playerImage = getInitialPlayerImage();
-  new Game(initialProperties);
+
+  const isMultiPlayerGame = confirm('Multi Player match?');
+  isMultiPlayerGame
+    ? new MultiPlayerGame(initialProperties)
+    : new Game(initialProperties);
 }
 
 function handleGameOver() {
