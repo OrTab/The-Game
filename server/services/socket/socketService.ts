@@ -2,7 +2,9 @@ import { Request } from '@or-tab/my-server/lib/dist/types/types';
 import { FRAME_TYPE_BY_OPCODE, MSB } from './constants';
 import { randomUUID } from 'crypto';
 import { app } from '@or-tab/my-server/lib/dist/setup/app';
-import type { Duplex } from 'stream';
+import type { Socket } from 'net';
+
+let clients: Socket[] = [];
 
 export const extractDataFromFrame = (frameBuffer: Buffer) => {
   const firstByte = frameBuffer.readUint8(0);
@@ -15,8 +17,12 @@ export const extractDataFromFrame = (frameBuffer: Buffer) => {
   const payloadLength = secondsByte & 0b01111111;
   const opCode = firstByte & 0b00001111;
   const frameType = FRAME_TYPE_BY_OPCODE[opCode];
+  if (frameType === 'CLOSE_FRAME') {
+    return [true];
+  }
+
   if (frameType !== 'TEXT_FRAME') {
-    return;
+    return [false, null];
   }
   let actualPayloadLength;
   let lastByte = 2;
@@ -51,8 +57,10 @@ export const extractDataFromFrame = (frameBuffer: Buffer) => {
     //@ts-ignore
     finalPayload[i] = value;
   }
+  console.log(finalPayload.toString());
+
   const data = JSON.parse(finalPayload.toString());
-  return data;
+  return [false, data];
 };
 
 const generateWebSocketResponseKey = (key) => {
@@ -62,24 +70,78 @@ const generateWebSocketResponseKey = (key) => {
   return sha1.digest('base64');
 };
 
-const subscribeToListeners = (socket: Duplex) => {
+const getWebSocketFrame = (data) => {
+  const stringifyData = JSON.stringify(data);
+  const payloadBuffer = Buffer.from(stringifyData, 'utf-8');
+  const actualPayloadLength = payloadBuffer.byteLength;
+
+  let bytesLength;
+  let headerBuffer;
+  if (actualPayloadLength < 126) {
+    headerBuffer = Buffer.alloc(2);
+    bytesLength = 0b01111101;
+    headerBuffer.writeUInt8(bytesLength, 1);
+  } else if (actualPayloadLength < 65536) {
+    headerBuffer = Buffer.alloc(4);
+    bytesLength = 0b01111110;
+    headerBuffer.writeUInt8(bytesLength, 1);
+    headerBuffer.writeUint16BE(actualPayloadLength, 2);
+  } else {
+    headerBuffer = Buffer.alloc(10);
+    bytesLength = 0b01111111;
+    headerBuffer.writeUInt8(bytesLength, 1);
+    headerBuffer.writeBigUInt64BE(BigInt(actualPayloadLength), 2);
+  }
+  headerBuffer.writeUInt8(0b10000001, 0);
+
+  return Buffer.concat([headerBuffer, payloadBuffer]);
+};
+
+export const broadcast = (socket: Socket, data) => {
+  const bufferFrame = getWebSocketFrame(data);
+
+  const filteredClients = clients.filter(
+    (client) => client !== socket && !client.destroyed
+  );
+
+  if (!filteredClients.length) {
+    return;
+  }
+
+  filteredClients.forEach((client) => {
+    client.write(bufferFrame!);
+  });
+};
+
+const handleCloseConnection = (socket: Socket) => {
+  console.log('WebSocket connection closed');
+  clients = clients.filter((client) => client !== client);
+  socket.end();
+  socket.destroy();
+};
+
+const subscribeToListeners = (socket: Socket) => {
   socket.on('data', (frameBuffer) => {
-    const data = extractDataFromFrame(frameBuffer);
-    console.log(data);
+    const [shouldCloseConnection, data] = extractDataFromFrame(frameBuffer);
+    if (shouldCloseConnection) {
+      socket.end();
+      return;
+    }
+    if (data) {
+      broadcast(socket, data);
+    }
   });
 
   socket.on('end', () => {
-    console.log('WebSocket connection closed');
-    socket.end();
-    socket.destroy();
+    handleCloseConnection(socket);
   });
 };
 
-const addMetaDatoSocket = (socket: Duplex) => {
+const addMetaDatoSocket = (socket: Socket) => {
   socket['id'] = randomUUID();
 };
 
-const handleResponse = (key: string, socket: Duplex) => {
+const handleResponse = (key: string, socket: Socket) => {
   const responseKey = generateWebSocketResponseKey(key);
   const headers = [
     'HTTP/1.1 101 Switching Protocols',
@@ -88,10 +150,10 @@ const handleResponse = (key: string, socket: Duplex) => {
     `Sec-WebSocket-Accept: ${responseKey}`,
     '\r\n',
   ];
-  socket.write(headers.join('\r\n'));
+  socket.write(headers.join('\r\n'), 'ascii');
 };
 
-export const handleWebSocketUpgrade = (req: Request, socket: Duplex) => {
+export const handleWebSocketUpgrade = (req: Request, socket: Socket) => {
   const key = req.headers['sec-websocket-key'];
   if (
     (req.headers.origin && !app.authorizedOrigins[req.headers.origin]) ||
@@ -105,6 +167,7 @@ export const handleWebSocketUpgrade = (req: Request, socket: Duplex) => {
     return;
   }
   console.log('New Socket');
+  clients.push(socket);
   handleResponse(key, socket);
   addMetaDatoSocket(socket);
   subscribeToListeners(socket);
