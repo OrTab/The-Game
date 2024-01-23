@@ -74,21 +74,18 @@ const getWebSocketFrame = (data) => {
   const stringifyData = JSON.stringify(data);
   const payloadBuffer = Buffer.from(stringifyData, 'utf-8');
   const actualPayloadLength = payloadBuffer.byteLength;
-
-  let bytesLength;
   let headerBuffer;
   if (actualPayloadLength < 126) {
     headerBuffer = Buffer.alloc(2);
-    bytesLength = 0b01111101;
-    headerBuffer.writeUInt8(bytesLength, 1);
+    headerBuffer.writeUInt8(actualPayloadLength, 1);
   } else if (actualPayloadLength < 65536) {
     headerBuffer = Buffer.alloc(4);
-    bytesLength = 0b01111110;
+    const bytesLength = 0b01111110;
     headerBuffer.writeUInt8(bytesLength, 1);
     headerBuffer.writeUint16BE(actualPayloadLength, 2);
   } else {
     headerBuffer = Buffer.alloc(10);
-    bytesLength = 0b01111111;
+    const bytesLength = 0b01111111;
     headerBuffer.writeUInt8(bytesLength, 1);
     headerBuffer.writeBigUInt64BE(BigInt(actualPayloadLength), 2);
   }
