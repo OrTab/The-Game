@@ -5,6 +5,10 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["*"],
+    },
     "moduleResolution": "Node",
     "strict": true,
     "sourceMap": true,
