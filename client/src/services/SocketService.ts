@@ -1,4 +1,4 @@
-import { EventBus } from './EventBus';
+import { EventBus } from '../../../shared/EventBus';
 
 class SocketService {
   private socket!: WebSocket;
