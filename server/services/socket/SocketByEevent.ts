@@ -11,6 +11,7 @@ export class SocketsByEvent {
       this.socketsEvents[eventName] = this.socketsEvents[eventName]!.filter(
         (_socket) => _socket !== socket
       );
+      socket.unsubscribers[eventName] = undefined;
     };
   }
 

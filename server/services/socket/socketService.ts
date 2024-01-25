@@ -52,25 +52,37 @@ class SocketService {
     Object.defineProperty(OriginalSocket.prototype, 'emitEvent', {
       value(eventName: string, data) {
         that.socketsByEvent.getSocketsForEvent(eventName).forEach((socket) => {
-          if (this._broadcast && socket === this) {
+          if (
+            (this._broadcast && socket === this) ||
+            (this.currentRoomId && !socket.rooms[this.currentRoomId])
+          ) {
             return;
           }
           socket.send({ eventName, data });
         });
         this._broadcast = false;
+        this.currentRoomId = undefined;
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'to', {
+      value(roomId: string) {
+        this.currentRoomId = roomId;
+        return this;
       },
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'sub', {
       value(eventName: string, callback: (...args) => void) {
-        const unsbscribe: () => void = this.eventBus.on(eventName, callback);
-        this.unsubscribers.push(unsbscribe);
+        this.eventBus.on(eventName, callback);
       },
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'unsubscribeToAll', {
       value() {
-        this.unsubscribers.forEach((fn) => fn());
+        Object.keys(this.unsubscribers).forEach((type) => {
+          this.unsubscribers[type]?.();
+        });
       },
     });
 
@@ -84,9 +96,35 @@ class SocketService {
     Object.defineProperty(OriginalSocket.prototype, 'unsubscribers', {
       get() {
         if (!this._unsubscribers) {
-          this._unsubscribers = [];
+          this._unsubscribers = {};
         }
         return this._unsubscribers;
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'rooms', {
+      get() {
+        if (!this._rooms) {
+          this._rooms = {};
+        }
+        return this._rooms;
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'joinRoom', {
+      value(roomId: string) {
+        this.rooms[roomId] = true;
+        return () => {
+          this.rooms[roomId] = undefined;
+          this.unsubscribers[roomId] = undefined;
+        };
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'leaveRoom', {
+      value(roomId: string) {
+        this.unsubscribers[roomId]?.();
+        this.unsubscribers[roomId] = undefined;
       },
     });
   }
@@ -98,13 +136,30 @@ class SocketService {
         socket.end();
         return;
       }
-      const { data: _data, eventName, type }: SocketEvent = data || {};
-      if (type && eventName) {
-        if (type === 'subscribe') {
-          const unsbscribe = this.socketsByEvent.register(eventName, socket);
-          socket.unsubscribers.push(unsbscribe);
-        } else if (type === 'emit') {
-          socket.eventBus.emit(eventName, _data);
+      const event: SocketEvent = data;
+      if (!data) {
+        return;
+      }
+      if (event.type === 'subscribe') {
+        const unsbscribe = this.socketsByEvent.register(
+          event.eventName,
+          socket
+        );
+        socket.unsubscribers[event.eventName] = unsbscribe;
+      } else if (event.type === 'emit') {
+        const { data, eventName } = event;
+        socket.eventBus.emit(eventName, data);
+      } else if (event.type === 'room') {
+        const { action, roomId } = event;
+        if (action === 'join') {
+          if (socket.rooms[event.roomId]) {
+            return;
+          }
+          console.log('Join room - ', roomId);
+          const leaveRoom = socket.joinRoom(roomId);
+          socket.unsubscribers[roomId] = leaveRoom;
+        } else {
+          socket.leaveRoom(roomId);
         }
       }
     });

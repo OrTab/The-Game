@@ -75,9 +75,12 @@ class Game {
     GameSettings.InitialFloorMovementXDiff;
   private isMultiPlayerMatch: boolean = false;
   flow: (() => void | Promise<void>)[];
+  gameId: string = '';
 
   constructor(player: IPlayer, isMultiPlayerMatch = false) {
     this.player = player;
+    this.gameId = Math.random() > 0.5 ? '123' : '456';
+    SocketService.joinRoom(this.gameId);
     this.isMultiPlayerMatch = isMultiPlayerMatch;
     window.addEventListener('resize', () => {
       this.resize(false);
@@ -267,7 +270,10 @@ class Game {
       handleGameOver();
     }
     if (this.isMultiPlayerMatch) {
-      SocketService.emit('updatePlayer', this.player);
+      SocketService.emit('updatePlayer', {
+        ...this.player,
+        gameId: this.gameId,
+      });
     }
     this.drawPlayer();
   }
@@ -517,7 +523,6 @@ class MultiPlayerGame extends Game {
   players: IPlayer[] = [];
   constructor(player: IPlayer) {
     super(player, true);
-    SocketService.connect();
     SocketService.on(
       SOCKET_EVENTS.UPDATE_PLAYER,
       this.updatePlayersState.bind(this)
@@ -565,16 +570,26 @@ function shouldInitGame() {
   }
 }
 
-function initGame() {
+const initMultiPlayerGame = async () => {
   const playerProperties = window.structuredClone<IPlayer>(
     INITIAL_PLAYER_PROPERTIES
   );
   playerProperties.playerImage = getInitialPlayerImage();
+  SocketService.connect();
+  new MultiPlayerGame(playerProperties);
+};
 
+function initGame() {
   const isMultiPlayerGame = confirm('Multi Player match?');
-  isMultiPlayerGame
-    ? new MultiPlayerGame(playerProperties)
-    : new Game(playerProperties);
+  if (isMultiPlayerGame) {
+    initMultiPlayerGame();
+    return;
+  }
+  const playerProperties = window.structuredClone<IPlayer>(
+    INITIAL_PLAYER_PROPERTIES
+  );
+  playerProperties.playerImage = getInitialPlayerImage();
+  new Game(playerProperties);
 }
 
 function handleGameOver() {

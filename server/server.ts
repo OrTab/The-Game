@@ -19,7 +19,9 @@ socketService.on('connection', (socket) => {
   console.log('New socket');
 
   socket.sub('updatePlayer', (data) => {
-    socket.broadcast.emitEvent(SOCKET_EVENTS.UPDATE_PLAYER, data);
+    socket.broadcast
+      .to(data.gameId)
+      .emitEvent(SOCKET_EVENTS.UPDATE_PLAYER, data);
   });
 });
 

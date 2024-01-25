@@ -1,4 +1,8 @@
-import { SocketEvent } from './../../../shared/socket.types.d';
+import {
+  EmitEvent,
+  RoomEvent,
+  SocketEvent,
+} from './../../../shared/socket.types.d';
 import { EventBus } from '../../../shared/EventBus';
 
 class SocketService {
@@ -23,7 +27,7 @@ class SocketService {
 
     this.socket.addEventListener('message', (ev) => {
       const { data } = ev;
-      const { data: eventData, eventName }: SocketEvent = JSON.parse(data);
+      const { data: eventData, eventName }: EmitEvent = JSON.parse(data);
       this.eventBus.emit(eventName, eventData);
     });
 
@@ -41,21 +45,37 @@ class SocketService {
     }
   }
 
+  private send(eventData: SocketEvent) {
+    const framePayload = JSON.stringify(eventData);
+    this.socket.send(framePayload);
+  }
+
   on(eventName: string, callback: (...args: any) => void) {
     const action = () => {
       this.eventBus.on(eventName, callback);
-      this.socket.send(
-        JSON.stringify(<SocketEvent>{ eventName, type: 'subscribe' })
-      );
+      this.send({ type: 'subscribe', eventName });
     };
     this.handleSocketNotLoaded(action);
   }
 
-  emit(eventName: string, data: SocketEvent['data']) {
+  private handleSocketRoom(roomId: string, action: RoomEvent['action']) {
+    const _action = () => {
+      this.send({ type: 'room', roomId, action });
+    };
+    this.handleSocketNotLoaded(_action);
+  }
+
+  joinRoom(roomId: string) {
+    this.handleSocketRoom(roomId, 'join');
+  }
+
+  leaveRoom(roomId: string) {
+    this.handleSocketRoom(roomId, 'leave');
+  }
+
+  emit(eventName: string, data: EmitEvent['data']) {
     const action = () => {
-      this.socket.send(
-        JSON.stringify(<SocketEvent>{ type: 'emit', eventName, data })
-      );
+      this.send({ type: 'emit', eventName, data });
     };
     this.handleSocketNotLoaded(action);
   }

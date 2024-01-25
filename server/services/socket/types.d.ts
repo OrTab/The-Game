@@ -8,6 +8,10 @@ export interface Socket extends OriginalSocket {
   broadcast: Socket;
   eventBus: EventBus;
   _broadcast: boolean;
-  unsubscribers: (() => void)[];
+  unsubscribers: Record<string, (() => void) | undefined>;
   unsubscribeToAll: () => void;
+  to: (roomId: string) => Socket;
+  joinRoom: (roomId: string) => () => void;
+  leaveRoom: (roomId: string) => void;
+  rooms: Record<string, boolean | undefined>;
 }
