@@ -2,8 +2,8 @@ import { Request } from '@or-tab/my-server/lib/dist/types/types';
 import { FRAME_TYPE_BY_OPCODE, MSB } from './constants';
 import { randomUUID } from 'crypto';
 import { app } from '@or-tab/my-server/lib/dist/setup/app';
-import type { Socket } from 'net';
 import socketService from './socketService';
+import { Socket } from './types';
 
 export const extractDataFromFrame = (frameBuffer: Buffer) => {
   const firstByte = frameBuffer.readUint8(0);
@@ -17,7 +17,7 @@ export const extractDataFromFrame = (frameBuffer: Buffer) => {
   const opCode = firstByte & 0b00001111;
   const frameType = FRAME_TYPE_BY_OPCODE[opCode];
   if (frameType === 'CLOSE_FRAME') {
-    return [true];
+    return [true, null];
   }
 
   if (frameType !== 'TEXT_FRAME') {
@@ -116,11 +116,10 @@ export const handleWebSocketUpgrade = (req: Request, socket: Socket) => {
     socket.destroy();
     return;
   }
-  console.log('New Socket');
   socketService.addSocket(socket);
   handleResponse(key, socket);
 };
 
 export const addMetaDatoSocket = (socket: Socket) => {
-  socket['id'] = randomUUID();
+  socket.id = randomUUID();
 };

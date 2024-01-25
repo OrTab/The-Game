@@ -266,7 +266,7 @@ class Game {
       handleGameOver();
     }
     if (this.isMultiPlayerMatch) {
-      SocketService.test(this.player);
+      SocketService.emit('updatePlayer', this.player);
     }
     this.drawPlayer();
   }
@@ -517,7 +517,8 @@ class MultiPlayerGame extends Game {
   constructor(player: IPlayer) {
     super(player, true);
     console.log('creating');
-    SocketService.connect(this.updatePlayersState.bind(this));
+    SocketService.connect();
+    SocketService.on('updatePlayer', this.updatePlayersState.bind(this));
     this.flow.push(this.drawPlayers.bind(this));
   }
 

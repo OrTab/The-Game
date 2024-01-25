@@ -1,17 +1,66 @@
+import { EventBus } from './../../../shared/EventBus';
+import { SocketData } from '../../../shared/socket.types';
+import { Socket } from './types';
 import {
   addMetaDatoSocket,
   extractDataFromFrame,
   getWebSocketFrame,
 } from './utils';
-import type { Socket } from 'net';
+import { Socket as OriginalSocket } from 'net';
 
 class SocketService {
   private sockets: Socket[] = [];
+  private eventBus: EventBus;
+  constructor() {
+    this.extendSocket();
+    this.eventBus = new EventBus();
+  }
 
   addSocket(socket: Socket) {
     addMetaDatoSocket(socket);
+    this.emitConnectionEvent(socket);
     this.subscribeToListeners(socket);
     this.sockets.push(socket);
+  }
+
+  emitConnectionEvent(socket: Socket) {
+    if (this.eventBus.events['connection']) {
+      this.eventBus.emit('connection', socket);
+    }
+  }
+
+  extendSocket() {
+    const that = this;
+    Object.defineProperty(OriginalSocket.prototype, 'send', {
+      value(data: any) {
+        const bufferFrame = getWebSocketFrame(data);
+        return this.write(bufferFrame);
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'emitEvent', {
+      value(eventName: string, data) {
+        this.send({ eventName, data });
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'sub', {
+      value(eventName: string, cb: (...args) => void) {
+        that.eventBus.on(eventName, cb);
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'broadcast', {
+      value(eventName: string, data) {
+        const filteredClients = that.sockets.filter(
+          (_socket) =>
+            _socket !== this && !_socket.destroyed && _socket.writable
+        );
+        filteredClients.forEach((_socket) => {
+          this.emitEvent(eventName, data);
+        });
+      },
+    });
   }
 
   subscribeToListeners(socket: Socket) {
@@ -21,8 +70,9 @@ class SocketService {
         socket.end();
         return;
       }
-      if (data) {
-        this.broadcast(socket, data);
+      const { data: _data, eventName }: SocketData = data || {};
+      if (eventName) {
+        this.eventBus.emit(eventName, _data);
       }
     });
 
@@ -38,14 +88,8 @@ class SocketService {
     socket.destroy();
   }
 
-  broadcast(socket: Socket, data) {
-    const bufferFrame = getWebSocketFrame(data);
-    const filteredClients = this.sockets.filter(
-      (_socket) => _socket !== socket && !_socket.destroyed && socket.writable
-    );
-    filteredClients.forEach((client) => {
-      client.write(bufferFrame!);
-    });
+  on(eventName: 'connection', cb: (socket: Socket) => void) {
+    this.eventBus.on(eventName, cb);
   }
 }
 
