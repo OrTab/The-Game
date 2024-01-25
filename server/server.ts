@@ -15,6 +15,8 @@ server.on('upgrade', (req: Request, socket: Socket) => {
 });
 
 socketService.on('connection', (socket) => {
+  console.log('New socket');
+
   socket.sub('updatePlayer', (data) => {
     socket.broadcast('updatePlayer', data);
   });

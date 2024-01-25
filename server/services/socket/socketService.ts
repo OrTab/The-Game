@@ -24,9 +24,7 @@ class SocketService {
   }
 
   emitConnectionEvent(socket: Socket) {
-    if (this.eventBus.events['connection']) {
-      this.eventBus.emit('connection', socket);
-    }
+    this.eventBus.emit('connection', socket);
   }
 
   extendSocket() {
@@ -38,6 +36,15 @@ class SocketService {
       },
     });
 
+    Object.defineProperty(OriginalSocket.prototype, 'eventBus', {
+      get() {
+        if (!this._eventBus) {
+          this._eventBus = new EventBus();
+        }
+        return this._eventBus;
+      },
+    });
+
     Object.defineProperty(OriginalSocket.prototype, 'emitEvent', {
       value(eventName: string, data) {
         this.send({ eventName, data });
@@ -46,7 +53,7 @@ class SocketService {
 
     Object.defineProperty(OriginalSocket.prototype, 'sub', {
       value(eventName: string, cb: (...args) => void) {
-        that.eventBus.on(eventName, cb);
+        return this.eventBus.on(eventName, cb);
       },
     });
 
@@ -56,8 +63,9 @@ class SocketService {
           (_socket) =>
             _socket !== this && !_socket.destroyed && _socket.writable
         );
+
         filteredClients.forEach((_socket) => {
-          this.emitEvent(eventName, data);
+          _socket.emitEvent(eventName, data);
         });
       },
     });
@@ -72,7 +80,7 @@ class SocketService {
       }
       const { data: _data, eventName }: SocketData = data || {};
       if (eventName) {
-        this.eventBus.emit(eventName, _data);
+        socket.eventBus.emit(eventName, _data);
       }
     });
 
