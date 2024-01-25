@@ -49,7 +49,7 @@ class Game {
   private velocityYDiff: number = GameSettings.VelocityYDiff;
   private gravity: number = GameSettings.Gravity;
   private jumpsCounter: number = 0;
-  private player: IPlayer;
+  player: IPlayer;
   private velocity: Velocity = {
     x: 0,
     y: 10,
@@ -516,7 +516,6 @@ class MultiPlayerGame extends Game {
   players: IPlayer[] = [];
   constructor(player: IPlayer) {
     super(player, true);
-    console.log('creating');
     SocketService.connect();
     SocketService.on('updatePlayer', this.updatePlayersState.bind(this));
     this.flow.push(this.drawPlayers.bind(this));
@@ -563,15 +562,15 @@ function shouldInitGame() {
 }
 
 function initGame() {
-  const initialProperties = window.structuredClone<IPlayer>(
+  const playerProperties = window.structuredClone<IPlayer>(
     INITIAL_PLAYER_PROPERTIES
   );
-  initialProperties.playerImage = getInitialPlayerImage();
+  playerProperties.playerImage = getInitialPlayerImage();
 
   const isMultiPlayerGame = confirm('Multi Player match?');
   isMultiPlayerGame
-    ? new MultiPlayerGame(initialProperties)
-    : new Game(initialProperties);
+    ? new MultiPlayerGame(playerProperties)
+    : new Game(playerProperties);
 }
 
 function handleGameOver() {
