@@ -1,3 +1,4 @@
+import { SOCKET_EVENTS } from './../shared/socketEvents';
 const hostname = '127.0.0.1';
 const port = 4001;
 import { noDep } from '@or-tab/my-server';
@@ -18,7 +19,7 @@ socketService.on('connection', (socket) => {
   console.log('New socket');
 
   socket.sub('updatePlayer', (data) => {
-    socket.broadcast.emitEvent('updatePlayer', data);
+    socket.broadcast.emitEvent(SOCKET_EVENTS.UPDATE_PLAYER, data);
   });
 });
 

@@ -1,3 +1,4 @@
+import { SOCKET_EVENTS } from './../../shared/socketEvents';
 import './styles/style.css';
 import {
   Position,
@@ -517,7 +518,10 @@ class MultiPlayerGame extends Game {
   constructor(player: IPlayer) {
     super(player, true);
     SocketService.connect();
-    SocketService.on('updatePlayer', this.updatePlayersState.bind(this));
+    SocketService.on(
+      SOCKET_EVENTS.UPDATE_PLAYER,
+      this.updatePlayersState.bind(this)
+    );
     this.flow.push(this.drawPlayers.bind(this));
   }
 
