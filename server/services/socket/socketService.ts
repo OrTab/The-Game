@@ -54,7 +54,8 @@ class SocketService {
         that.socketsByEvent.getSocketsForEvent(eventName).forEach((socket) => {
           if (
             (this._broadcast && socket === this) ||
-            (this.currentRoomId && !socket.rooms[this.currentRoomId])
+            (this.currentRoomId && !this.rooms[this.currentRoomId]) ||
+            !socket.rooms[this.currentRoomId]
           ) {
             return;
           }
@@ -123,6 +124,8 @@ class SocketService {
 
     Object.defineProperty(OriginalSocket.prototype, 'leaveRoom', {
       value(roomId: string) {
+        console.log('leaving room - ', roomId);
+
         this.unsubscribers[roomId]?.();
         this.unsubscribers[roomId] = undefined;
       },
