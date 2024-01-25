@@ -18,7 +18,7 @@ socketService.on('connection', (socket) => {
   console.log('New socket');
 
   socket.sub('updatePlayer', (data) => {
-    socket.broadcast('updatePlayer', data);
+    socket.broadcast.emitEvent('updatePlayer', data);
   });
 });
 
@@ -26,3 +26,7 @@ server.listen(port, hostname);
 server.on('listening', () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
+
+// user 1        user 2
+
+// connected    connected

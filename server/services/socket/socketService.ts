@@ -1,5 +1,5 @@
 import { EventBus } from './../../../shared/EventBus';
-import { SocketData } from '../../../shared/socket.types';
+import { SocketEvent } from '../../../shared/socket.types';
 import { Socket } from './types';
 import {
   addMetaDatoSocket,
@@ -7,12 +7,16 @@ import {
   getWebSocketFrame,
 } from './utils';
 import { Socket as OriginalSocket } from 'net';
+import { SocketsByEvent } from './SocketByEevent';
 
 class SocketService {
   private sockets: Socket[] = [];
   private eventBus: EventBus;
+  private socketsByEvent: SocketsByEvent;
+
   constructor() {
     this.extendSocket();
+    this.socketsByEvent = new SocketsByEvent();
     this.eventBus = new EventBus();
   }
 
@@ -47,26 +51,42 @@ class SocketService {
 
     Object.defineProperty(OriginalSocket.prototype, 'emitEvent', {
       value(eventName: string, data) {
-        this.send({ eventName, data });
+        that.socketsByEvent.getSocketsForEvent(eventName).forEach((socket) => {
+          if (this._broadcast && socket === this) {
+            return;
+          }
+          socket.send({ eventName, data });
+        });
+        this._broadcast = false;
       },
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'sub', {
       value(eventName: string, cb: (...args) => void) {
-        return this.eventBus.on(eventName, cb);
+        const unsbscribe: () => void = this.eventBus.on(eventName, cb);
+        this.unsubscribers.push(unsbscribe);
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'unsubscribeToAll', {
+      value() {
+        this.unsubscribers.forEach((fn) => fn());
       },
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'broadcast', {
-      value(eventName: string, data) {
-        const filteredClients = that.sockets.filter(
-          (_socket) =>
-            _socket !== this && !_socket.destroyed && _socket.writable
-        );
+      get() {
+        this._broadcast = true;
+        return this;
+      },
+    });
 
-        filteredClients.forEach((_socket) => {
-          _socket.emitEvent(eventName, data);
-        });
+    Object.defineProperty(OriginalSocket.prototype, 'unsubscribers', {
+      get() {
+        if (!this._unsubscribers) {
+          this._unsubscribers = [];
+        }
+        return this._unsubscribers;
       },
     });
   }
@@ -78,9 +98,14 @@ class SocketService {
         socket.end();
         return;
       }
-      const { data: _data, eventName }: SocketData = data || {};
-      if (eventName) {
-        socket.eventBus.emit(eventName, _data);
+      const { data: _data, eventName, type }: SocketEvent = data || {};
+      if (type && eventName) {
+        if (type === 'subscribe') {
+          const unsbscribe = this.socketsByEvent.register(eventName, socket);
+          socket.unsubscribers.push(unsbscribe);
+        } else if (type === 'emit') {
+          socket.eventBus.emit(eventName, _data);
+        }
       }
     });
 
@@ -94,6 +119,7 @@ class SocketService {
     this.sockets = this.sockets.filter((_socket) => _socket !== socket);
     socket.end();
     socket.destroy();
+    socket.unsubscribeToAll();
   }
 
   on(eventName: 'connection', cb: (socket: Socket) => void) {

@@ -1,4 +1,5 @@
-export type SocketData = {
+export type SocketEvent = {
   eventName: string;
-  data: Record<string, any> | number | boolean | string | any[];
+  type: 'subscribe' | 'emit';
+  data?: Record<string, any> | number | boolean | string | any[];
 };
