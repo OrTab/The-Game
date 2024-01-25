@@ -62,8 +62,8 @@ class SocketService {
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'sub', {
-      value(eventName: string, cb: (...args) => void) {
-        const unsbscribe: () => void = this.eventBus.on(eventName, cb);
+      value(eventName: string, callback: (...args) => void) {
+        const unsbscribe: () => void = this.eventBus.on(eventName, callback);
         this.unsubscribers.push(unsbscribe);
       },
     });
@@ -122,8 +122,8 @@ class SocketService {
     socket.unsubscribeToAll();
   }
 
-  on(eventName: 'connection', cb: (socket: Socket) => void) {
-    this.eventBus.on(eventName, cb);
+  on(eventName: 'connection', callback: (socket: Socket) => void) {
+    this.eventBus.on(eventName, callback);
   }
 }
 
