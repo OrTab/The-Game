@@ -53,6 +53,9 @@ class SocketService {
       value(eventName: string, data) {
         that.socketsByEvent.getSocketsForEvent(eventName).forEach((socket) => {
           if (
+            socket.closed ||
+            socket.destroyed ||
+            !socket.writable ||
             (this._broadcast && socket === this) ||
             (this.currentRoomId && !this.rooms[this.currentRoomId]) ||
             !socket.rooms[this.currentRoomId]
