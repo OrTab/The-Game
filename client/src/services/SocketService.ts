@@ -10,10 +10,16 @@ class SocketService {
   private isConnected = false;
   private wasConnected = false;
   private eventBus: EventBus;
+  private unsubscribers: ReturnType<EventBus['on']>[] = [];
 
   constructor() {
     this.eventBus = new EventBus();
   }
+
+  get isSocketOpen() {
+    return this.socket?.readyState === WebSocket.OPEN;
+  }
+
   connect() {
     if (this.isConnected) {
       return;
@@ -34,13 +40,16 @@ class SocketService {
     this.socket.addEventListener('close', () => {
       console.log('Client connection closed');
       this.isConnected = false;
+      this.unsubscribers.forEach((unsubscriber) => unsubscriber());
     });
   }
 
   private handleSocketNotLoaded(callback: () => void) {
-    if (!this.isConnected && !this.wasConnected) {
-      setTimeout(callback, 100);
-    } else {
+    if (!this.isConnected) {
+      if (!this.wasConnected) {
+        setTimeout(callback, 100);
+      }
+    } else if (this.isSocketOpen) {
       callback();
     }
   }
@@ -50,9 +59,20 @@ class SocketService {
     this.socket.send(framePayload);
   }
 
+  private getUnsubscriber(unsubscribe: () => void) {
+    const unsubscriber = () => {
+      unsubscribe();
+      this.unsubscribers = this.unsubscribers.filter(
+        (_unsubscribe) => _unsubscribe !== unsubscriber
+      );
+    };
+    return unsubscriber;
+  }
+
   on(eventName: string, callback: (...args: any) => void) {
     const action = () => {
-      this.eventBus.on(eventName, callback);
+      const unsubscribe = this.eventBus.on(eventName, callback);
+      this.unsubscribers.push(this.getUnsubscriber(unsubscribe));
       this.send({ type: 'subscribe', eventName });
     };
     this.handleSocketNotLoaded(action);
@@ -71,6 +91,12 @@ class SocketService {
 
   leaveRoom(roomId: string) {
     this.handleSocketRoom(roomId, 'leave');
+  }
+
+  terminate() {
+    if (this.isSocketOpen) {
+      this.socket.close(1000, 'Closing connection intentionally');
+    }
   }
 
   emit(eventName: string, data: EmitEvent['data']) {

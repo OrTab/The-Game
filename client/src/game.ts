@@ -68,11 +68,8 @@ class Game {
   private distance: number = 0;
   private numberOfFramesToMovePlayerImage: number = 0;
   private platformMovementXDiff: number =
-    GameSettings.InitialPlatformMovementXDiff -
     GameSettings.InitialPlatformMovementXDiff;
-  private floorMovementXDiff: number =
-    GameSettings.InitialFloorMovementXDiff -
-    GameSettings.InitialFloorMovementXDiff;
+  private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
   private isMultiPlayerMatch: boolean = false;
   flow: (() => void | Promise<void>)[];
   gameId: string = '';
@@ -527,6 +524,11 @@ class MultiPlayerGame extends Game {
       SOCKET_EVENTS.UPDATE_PLAYER,
       this.updatePlayersState.bind(this)
     );
+    setTimeout(() => {
+      if (Math.random() > 0.5) {
+        SocketService.leaveRoom('456');
+      }
+    }, 5000);
     this.flow.push(this.drawPlayers.bind(this));
   }
 
@@ -596,6 +598,7 @@ function handleGameOver() {
   restartBtn.hidden = false;
   cancelAnimationFrame(requestAnimationId);
   gameOverModal.classList.add('show');
+  SocketService.terminate();
 }
 
 function onRestart() {
