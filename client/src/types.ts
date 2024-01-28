@@ -87,4 +87,5 @@ export interface IPlayer {
   size: Size;
   playerImage: IPlayerImage;
   _id: string;
+  name: string;
 }

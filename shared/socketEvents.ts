@@ -1,3 +1,11 @@
 export const SOCKET_EVENTS = {
-  UPDATE_PLAYER: 'updatePlayer',
+  UPDATE_PLAYER: 'update_player',
+  JOIN_LOBBY: 'join_lobby',
+  LEAVE_LOBBY: 'leave_lobby',
+  LOBBY_PLAYERS: 'lobby_players',
+  ACKNOWLEDGMENT: 'acknowledgment',
+} as const;
+
+export const SOCKET_ROOMS = {
+  LOBBY: 'lobby',
 } as const;

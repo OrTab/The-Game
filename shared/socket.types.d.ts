@@ -1,4 +1,6 @@
-export type SocketEvent = RoomEvent | SubscribeEvent | EmitEvent;
+export type SocketEvent = (RoomEvent | SubscribeEvent | EmitEvent) & {
+  id?: string;
+};
 
 export type RoomEvent = {
   type: 'room';

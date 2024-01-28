@@ -11,6 +11,7 @@ export const INITIAL_PLAYER_PROPERTIES: IPlayer = {
   },
   playerImage: getInitialPlayerImage(),
   _id: crypto.randomUUID(),
+  name: 'player' + crypto.randomUUID().slice(0, 5),
 };
 
 export function getInitialPlayerImage(): IPlayerImage {

@@ -14,4 +14,5 @@ export interface Socket extends OriginalSocket {
   joinRoom: (roomId: string) => () => void;
   leaveRoom: (roomId: string) => void;
   rooms: Record<string, boolean | undefined>;
+  emitToMyself: Socket['emitEvent'];
 }

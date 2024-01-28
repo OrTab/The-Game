@@ -7,7 +7,8 @@ import {
   getWebSocketFrame,
 } from './utils';
 import { Socket as OriginalSocket } from 'net';
-import { SocketsByEvent } from './SocketByEevent';
+import { SocketsByEvent } from './SocketByEvent';
+import { SOCKET_EVENTS } from '../../../shared/socketEvents';
 
 class SocketService {
   private sockets: Socket[] = [];
@@ -37,6 +38,12 @@ class SocketService {
       value(data: any) {
         const bufferFrame = getWebSocketFrame(data);
         return this.write(bufferFrame);
+      },
+    });
+
+    Object.defineProperty(OriginalSocket.prototype, 'emitToMyself', {
+      value(eventName: string, data) {
+        this.send({ eventName, data });
       },
     });
 
@@ -143,15 +150,18 @@ class SocketService {
         return;
       }
       const event: SocketEvent = data;
-      if (!data) {
+      if (!event) {
         return;
       }
+      if (event.id) {
+        socket.emitToMyself(SOCKET_EVENTS.ACKNOWLEDGMENT, event.id);
+      }
       if (event.type === 'subscribe') {
-        const unsbscribe = this.socketsByEvent.register(
+        const unsubscribe = this.socketsByEvent.register(
           event.eventName,
           socket
         );
-        socket.unsubscribers[event.eventName] = unsbscribe;
+        socket.unsubscribers[event.eventName] = unsubscribe;
       } else if (event.type === 'emit') {
         const { data, eventName } = event;
         socket.eventBus.emit(eventName, data);
