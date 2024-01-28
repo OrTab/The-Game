@@ -2,7 +2,10 @@ import type { Socket as OriginalSocket } from 'net';
 import type { EventBus } from '../../../shared/EventBus';
 export interface Socket extends OriginalSocket {
   id: string;
-  emitEvent: (eventName: string, data: any) => void;
+  emitEvent: (
+    eventName: string,
+    dataOrCallback: any | ((socket: Socket) => any)
+  ) => void;
   send: (data: any) => boolean;
   sub: (eventName: string, callback: <T = any>(data: any) => void) => void;
   broadcast: Socket;

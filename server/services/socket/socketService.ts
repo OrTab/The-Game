@@ -57,7 +57,10 @@ class SocketService {
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'emitEvent', {
-      value(eventName: string, data) {
+      value(
+        eventName: string,
+        dataOrCallback: any | ((socket: Socket) => any)
+      ) {
         that.socketsByEvent.getSocketsForEvent(eventName).forEach((socket) => {
           if (
             socket.closed ||
@@ -69,7 +72,11 @@ class SocketService {
           ) {
             return;
           }
-          socket.send({ eventName, data });
+          const _data =
+            typeof dataOrCallback === 'function'
+              ? dataOrCallback(this)
+              : dataOrCallback;
+          socket.send({ eventName, data: _data });
         });
         this._broadcast = false;
         this.currentRoomId = undefined;
