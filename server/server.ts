@@ -25,17 +25,16 @@ socketService.on('connection', (socket) => {
     lobbyPlayers.push(player);
     // console.log(lobbyPlayers);
 
-    socket.broadcast
+    socket
       .to(SOCKET_ROOMS.LOBBY)
-      .emitEvent(SOCKET_EVENTS.JOIN_LOBBY, player);
-    socket.emitToMyself(SOCKET_EVENTS.LOBBY_PLAYERS, lobbyPlayers);
+      .emitEvent(SOCKET_EVENTS.LOBBY_PLAYERS, lobbyPlayers);
   });
 
   socket.sub(SOCKET_EVENTS.LEAVE_LOBBY, (player) => {
     lobbyPlayers = lobbyPlayers.filter((_player) => _player._id !== player._id);
     socket.broadcast
       .to(SOCKET_ROOMS.LOBBY)
-      .emitEvent(SOCKET_EVENTS.LEAVE_LOBBY, player);
+      .emitEvent(SOCKET_EVENTS.LOBBY_PLAYERS, lobbyPlayers);
   });
 
   socket.sub('updatePlayer', (data) => {
@@ -44,10 +43,17 @@ socketService.on('connection', (socket) => {
       .emitEvent(SOCKET_EVENTS.UPDATE_PLAYER, data);
   });
 
-  socket.on('close', () => {
+  socket.on('end', () => {
+    if (!socket.rooms['lobby']) {
+      return;
+    }
     lobbyPlayers = lobbyPlayers.filter(
       (_player) => _player._id !== socket['playerId']
     );
+
+    socket.broadcast
+      .to(SOCKET_ROOMS.LOBBY)
+      .emitEvent(SOCKET_EVENTS.LOBBY_PLAYERS, lobbyPlayers);
   });
 });
 
