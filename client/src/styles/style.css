@@ -4,7 +4,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 canvas {
@@ -12,7 +13,7 @@ canvas {
   height: 100vh;
 }
 
-.game-over{
+.modal {
   opacity: 0;
   visibility: hidden;
   width: 250px;
@@ -24,26 +25,25 @@ canvas {
   position: absolute;
   left: 50%;
   top: 40%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   background-color: #52a1c9;
-  transition:400ms;
-  border-radius: 10px
-  
+  transition: 400ms;
+  border-radius: 10px;
 }
 
-.game-over .btn {
-  color: #FFF;
+.modal .button {
+  color: #090808;
   transition: all 0.3s;
   position: relative;
   cursor: pointer;
   padding: 20px 50px;
 }
 
-.game-over .btn span {
+.modal .button {
   transition: all 0.3s;
 }
 
-.game-over .btn::before {
+.modal .button::before {
   content: '';
   position: absolute;
   bottom: 0;
@@ -57,18 +57,18 @@ canvas {
   border-bottom-width: 1px;
   border-top-style: solid;
   border-bottom-style: solid;
-  border-top-color: rgba(255,255,255,0.5);
-  border-bottom-color: rgba(255,255,255,0.5);
+  border-top-color: rgba(255, 255, 255, 0.5);
+  border-bottom-color: rgba(255, 255, 255, 0.5);
   transform: scale(0.1, 1);
 }
-.game-over .btn:hover span {
+.modal .button:hover {
   letter-spacing: 1px;
 }
-.game-over .btn:hover::before {
-  opacity: 1; 
-  transform: scale(1, 1); 
+.modal .button:hover::before {
+  opacity: 1;
+  transform: scale(1, 1);
 }
-.game-over .btn::after {
+.modal .button::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -77,13 +77,12 @@ canvas {
   height: 100%;
   z-index: 1;
   transition: all 0.3s;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(166, 160, 228, 0.648);
 }
-.game-over .btn:hover::after {
-  opacity: 0; 
+.modal .button:hover::after {
+  opacity: 0;
   transform: scale(0.1, 1);
 }
-
 
 .show {
   opacity: 1;

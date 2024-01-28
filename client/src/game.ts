@@ -22,6 +22,7 @@ import spriteStandLeft from './assets/spriteStandLeft.png';
 import SocketService from './services/SocketService';
 import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './constants';
 import { Lobby } from './lobby';
+import { Modal } from './components/Modal';
 
 const PLAYER_IMAGES = {
   runRight: createImage(spriteRunRight, shouldInitGame),
@@ -44,11 +45,6 @@ let requestAnimationId = 0;
 runPolyfill();
 const canvas = document.querySelector('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-const restartBtn = document.querySelector(
-  '.game-over .btn'
-) as HTMLButtonElement;
-const gameOverModal = document.querySelector('.game-over') as HTMLDivElement;
-restartBtn.addEventListener('click', onRestart);
 
 class Game {
   private velocityXDiff: number = GameSettings.VelocityXDiff;
@@ -212,6 +208,7 @@ class Game {
 
   private shouldAddMoreFloors() {
     const secondFromLastFloor = this.floors.at(-2);
+    console.log(this.floors);
 
     if (
       secondFromLastFloor &&
@@ -589,15 +586,25 @@ function initGame() {
 }
 
 function handleGameOver() {
-  restartBtn.hidden = false;
+  const modal = new Modal({
+    title: 'Game Over',
+    buttons: [
+      {
+        onClick: () => {
+          modal.hide();
+          onRestart();
+        },
+        content: 'Restart',
+      },
+    ],
+  });
+
   cancelAnimationFrame(requestAnimationId);
-  gameOverModal.classList.add('show');
+
   SocketService.terminate();
 }
 
 function onRestart() {
   window.removeEventListeners({ shouldRemoveAll: true });
   initGame();
-  restartBtn.hidden = true;
-  gameOverModal.classList.remove('show');
 }
