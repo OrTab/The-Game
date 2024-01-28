@@ -20,7 +20,8 @@ import spriteRunLeft from './assets/spriteRunLeft.png';
 import spriteStandRight from './assets/spriteStandRight.png';
 import spriteStandLeft from './assets/spriteStandLeft.png';
 import SocketService from './services/SocketService';
-import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './contants';
+import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './constants';
+import { Lobby } from './lobby';
 
 const PLAYER_IMAGES = {
   runRight: createImage(spriteRunRight, shouldInitGame),
@@ -29,10 +30,14 @@ const PLAYER_IMAGES = {
   standRight: createImage(spriteStandRight, shouldInitGame),
 } as const;
 
-const backgroundImage = createImage(background, shouldInitGame);
-// const floorImage = createImage(floor, shouldInitGame);
-const platformImage = createImage(platform, shouldInitGame);
+const OBJECT_IMAGES = {
+  background: createImage(background, shouldInitGame),
+  platform: createImage(platform, shouldInitGame),
+  // floor :createImage(floor, shouldInitGame)
+};
 
+const numberOfTotalImagesInGame =
+  Object.keys(PLAYER_IMAGES).length + Object.keys(OBJECT_IMAGES).length;
 let numOfLoadedImages = 0;
 let requestAnimationId = 0;
 
@@ -72,12 +77,9 @@ class Game {
   private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
   private isMultiPlayerMatch: boolean = false;
   flow: (() => void | Promise<void>)[];
-  gameId: string = '';
 
   constructor(player: IPlayer, isMultiPlayerMatch = false) {
     this.player = player;
-    this.gameId = Math.random() > 0.5 ? '123' : '456';
-    SocketService.joinRoom(this.gameId);
     this.isMultiPlayerMatch = isMultiPlayerMatch;
     window.addEventListener('resize', () => {
       this.resize(false);
@@ -153,18 +155,18 @@ class Game {
     this.platforms = this.getGameObjects({
       minX: 0,
       maxX: 500,
-      img: platformImage,
+      img: OBJECT_IMAGES.platform,
       type: 'platform',
     });
 
     this.genericObjects[0] = new GenericObject(
       { x: -1, y: -1 },
       { height: canvas.height, width: canvas.width },
-      backgroundImage
+      OBJECT_IMAGES.background
     );
     this.floors = this.getGameObjects({
       minX: 0,
-      img: platformImage,
+      img: OBJECT_IMAGES.platform,
       type: 'floor',
     });
   }
@@ -223,7 +225,7 @@ class Game {
               lastFloor.position.x +
               lastFloor.size.width +
               getRandomInt(120, 350),
-            img: platformImage,
+            img: OBJECT_IMAGES.platform,
             type: 'floor',
           }) || [];
         this.floors.push(...floors);
@@ -267,10 +269,7 @@ class Game {
       handleGameOver();
     }
     if (this.isMultiPlayerMatch) {
-      SocketService.emit('updatePlayer', {
-        ...this.player,
-        gameId: this.gameId,
-      });
+      SocketService.emit('updatePlayer', this.player);
     }
     this.drawPlayer();
   }
@@ -366,7 +365,7 @@ class Game {
           this.getGameObjects({
             minX: posX,
             maxX: posX + lastPlatform.size.width,
-            img: platformImage,
+            img: OBJECT_IMAGES.platform,
             type: 'platform',
           }) || [];
         this.platforms.push(...platforms);
@@ -524,19 +523,14 @@ class MultiPlayerGame extends Game {
       SOCKET_EVENTS.UPDATE_PLAYER,
       this.updatePlayersState.bind(this)
     );
-    setTimeout(() => {
-      if (Math.random() > 0.5) {
-        SocketService.leaveRoom('456');
-      }
-    }, 5000);
+
     this.flow.push(this.drawPlayers.bind(this));
   }
 
   updatePlayersState(player: IPlayer) {
-    // this.players = this.players.map((_player) =>
-    //   _player._id === player._id ? player : _player
-    // );
-    this.players = [player];
+    this.players = this.players.map((_player) =>
+      _player._id === player._id ? player : _player
+    );
   }
 
   drawPlayers() {
@@ -567,7 +561,8 @@ export class GenericObject {
 }
 function shouldInitGame() {
   numOfLoadedImages++;
-  if (numOfLoadedImages === GameSettings.NumberOfTotalImagesInGame) {
+
+  if (numOfLoadedImages === numberOfTotalImagesInGame) {
     initGame();
   }
 }
@@ -577,8 +572,7 @@ const initMultiPlayerGame = async () => {
     INITIAL_PLAYER_PROPERTIES
   );
   playerProperties.playerImage = getInitialPlayerImage();
-  SocketService.connect();
-  new MultiPlayerGame(playerProperties);
+  const lobby = new Lobby(playerProperties);
 };
 
 function initGame() {
