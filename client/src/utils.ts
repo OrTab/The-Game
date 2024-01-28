@@ -1,4 +1,4 @@
-import { TListenersPerEvent } from './models';
+import { TListenersPerEvent } from './types';
 
 export const getRandomInt = (min: number, max: number): number => {
   min = Math.ceil(min);
