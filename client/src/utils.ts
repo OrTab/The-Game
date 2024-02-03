@@ -45,7 +45,9 @@ export const sleep = (delay: number) =>
 export const runPolyfill = () => {
   EventTarget.prototype.addEventListenerBase =
     EventTarget.prototype.addEventListener;
-  const listenersMap = new Map<EventTarget, TListenersPerEvent>();
+  EventTarget.prototype.removeEventListenerBase =
+    EventTarget.prototype.removeEventListener;
+  const listenersMap = new WeakMap<EventTarget, TListenersPerEvent>();
   EventTarget.prototype.addEventListener = function (
     eventType: keyof WindowEventMap,
     listener: EventListener,
@@ -69,7 +71,14 @@ export const runPolyfill = () => {
     }
     this.addEventListenerBase(eventType, listener, options);
   };
-
+  EventTarget.prototype.removeEventListener = function (
+    type: string,
+    callback: EventListener,
+    options?: boolean | EventListenerOptions | undefined
+  ) {
+    listenersMap.delete(this);
+    this.removeEventListenerBase(type, callback, options);
+  };
   EventTarget.prototype.removeEventListeners = function ({
     type = null,
     shouldRemoveAll = false,
@@ -81,6 +90,7 @@ export const runPolyfill = () => {
     };
 
     const listenersOfTarget = listenersMap.get(this);
+
     if (listenersOfTarget) {
       if (shouldRemoveAll && !type) {
         for (const type in listenersOfTarget) {

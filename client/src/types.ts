@@ -5,6 +5,7 @@ declare global {
 
   interface EventTarget {
     addEventListenerBase: typeof EventTarget.prototype.addEventListener;
+    removeEventListenerBase: typeof EventTarget.prototype.removeEventListener;
     removeEventListeners: ({
       type,
       shouldRemoveAll,

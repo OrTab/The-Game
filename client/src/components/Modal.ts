@@ -57,6 +57,9 @@ export class Modal {
   hide(resetCurrentModal = false) {
     this.modalContainer?.classList.remove('show');
     const shouldHideNow = resetCurrentModal && Modal.currentModal === this;
+    this.buttonsContainer?.childNodes.forEach((node) =>
+      node.removeEventListeners({ shouldRemoveAll: true })
+    );
     setTimeout(
       () => {
         if (this.modalContainer.parentElement === document.body) {
