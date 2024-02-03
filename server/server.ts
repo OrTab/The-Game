@@ -11,7 +11,10 @@ const { app, server } = noDep();
 
 let lobbyPlayers: any[] = [];
 
-app.enableCorsForOrigins({ 'http://localhost:4000': ['*'] });
+app.enableCorsForOrigins({
+  'http://localhost:4000': ['*'],
+  'http://127.0.0.1:4000': ['*'],
+});
 
 server.on('upgrade', (req: Request, socket: Socket) => {
   handleWebSocketUpgrade(req, socket);
