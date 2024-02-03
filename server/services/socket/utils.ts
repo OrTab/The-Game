@@ -106,8 +106,8 @@ const handleResponse = (key: string, socket: Socket) => {
 export const handleWebSocketUpgrade = (req: Request, socket: Socket) => {
   const key = req.headers['sec-websocket-key'];
   if (
-    (req.headers.origin && !app.authorizedOrigins[req.headers.origin]) ||
-    !key
+    !key ||
+    (req.headers.origin && !app.authorizedOrigins[req.headers.origin])
   ) {
     // Send a 401 Unauthorized status code
     const response = 'HTTP/1.1 401 Unauthorized\r\n\r\n';
