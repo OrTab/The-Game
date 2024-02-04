@@ -5,11 +5,9 @@ import {
   GameSettings,
   Velocity,
   IPlayer,
-  IObjectCreationParams,
-  TGameObjectsType,
   TLastPressedKeys,
 } from './types';
-import { getRandomInt, sleep, runPolyfill } from './utils';
+import { sleep, runPolyfill } from './utils';
 
 import { GenericObject } from './GenericObject';
 
@@ -19,12 +17,14 @@ runPolyfill();
 const canvas = document.querySelector('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-export class BaseGame {
+export abstract class BaseGame {
+  player: IPlayer;
+  platforms: GenericObject[] = [];
+  floors: GenericObject[] = [];
   private velocityXDiff: number = GameSettings.VelocityXDiff;
   private velocityYDiff: number = GameSettings.VelocityYDiff;
   private gravity: number = GameSettings.Gravity;
   private jumpsCounter: number = 0;
-  player: IPlayer;
   private velocity: Velocity = {
     x: 0,
     y: 10,
@@ -34,9 +34,7 @@ export class BaseGame {
     left: { isPressed: false },
   };
   private lastPressedKey: TLastPressedKeys = 'right';
-  private platforms: GenericObject[] = [];
   private genericObjects: GenericObject[] = [];
-  private floors: GenericObject[] = [];
   private numberOfFramesToIncreaseDistance = 0;
   private lastDistanceToIncreaseSpeed: number = 0;
   private distance: number = 0;
@@ -46,6 +44,8 @@ export class BaseGame {
   private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
   private onGameOverCallback: (() => void) | undefined;
   constructor(player: IPlayer, gameOverCallback: (() => void) | undefined) {
+    GenericObject.ctx = ctx;
+    GenericObject.canvas = canvas;
     this.player = player;
     window.addEventListener('resize', () => {
       this.resize(false);
@@ -56,6 +56,8 @@ export class BaseGame {
     this.initObjects();
     this.onGameOverCallback = gameOverCallback;
   }
+
+  protected abstract handleSubclassLogic(): void;
 
   private set setKeyIsPressed({
     side,
@@ -110,7 +112,7 @@ export class BaseGame {
   }
 
   private initObjects() {
-    this.platforms = this.getGameObjects({
+    this.platforms = GenericObject.getGameObjects({
       minX: 0,
       maxX: 500,
       img: OBJECT_IMAGES.platform,
@@ -120,10 +122,9 @@ export class BaseGame {
     this.genericObjects[0] = new GenericObject(
       { x: -1, y: -1 },
       { height: canvas.height, width: canvas.width },
-      OBJECT_IMAGES.background,
-      ctx
+      OBJECT_IMAGES.background
     );
-    this.floors = this.getGameObjects({
+    this.floors = GenericObject.getGameObjects({
       minX: 0,
       img: OBJECT_IMAGES.platform,
       type: 'floor',
@@ -140,6 +141,7 @@ export class BaseGame {
     this.handleDistance();
     this.updateVelocity();
     this.updatePlayerPosition();
+    this.handleSubclassLogic();
   }
 
   private drawObjects() {
@@ -174,28 +176,7 @@ export class BaseGame {
     return this.keys.left.isPressed ? -diff : diff;
   }
 
-  private shouldAddMoreFloors() {
-    const secondFromLastFloor = this.floors.at(-2);
-
-    if (
-      secondFromLastFloor &&
-      this.player.position.x >= secondFromLastFloor.position.x
-    ) {
-      const lastFloor = this.floors.at(-1);
-      if (lastFloor) {
-        const floors =
-          this.getGameObjects({
-            minX:
-              lastFloor.position.x +
-              lastFloor.size.width +
-              getRandomInt(80, 100),
-            img: OBJECT_IMAGES.platform,
-            type: 'floor',
-          }) || [];
-        this.floors.push(...floors);
-      }
-    }
-  }
+  private shouldAddMoreFloors() {}
 
   private updateVelocity() {
     if (this.isOnFloor || this.isOnPlatform) {
@@ -315,76 +296,6 @@ export class BaseGame {
 
       platform.draw();
     });
-
-    this.shouldAddMorePlatforms();
-  }
-
-  private shouldAddMorePlatforms() {
-    const thirdFromLastPlatform = this.platforms.at(-3);
-    if (
-      thirdFromLastPlatform &&
-      this.player.position.x >= thirdFromLastPlatform.position.x
-    ) {
-      const lastPlatform = this.platforms.at(-1);
-      if (lastPlatform) {
-        const { x: posX } = lastPlatform.position;
-        const platforms =
-          this.getGameObjects({
-            minX: posX,
-            maxX: posX + lastPlatform.size.width,
-            img: OBJECT_IMAGES.platform,
-            type: 'platform',
-          }) || [];
-        this.platforms.push(...platforms);
-      }
-    }
-  }
-
-  private getGameObjects({
-    minX,
-    maxX = 500,
-    img,
-    type,
-  }: IObjectCreationParams) {
-    const callbackPerType: {
-      [type in TGameObjectsType]: () => GenericObject;
-    } = {
-      platform() {
-        minX = getRandomInt(minX + GameSettings.MinXDiffBetweenPlatform, maxX);
-        maxX += 500;
-        return new GenericObject(
-          {
-            x: minX,
-            y: getRandomInt(320, canvas.height - 250),
-          },
-          {
-            width: getRandomInt(150, 350),
-            height: 30,
-          },
-          img,
-          ctx
-        );
-      },
-      floor() {
-        const widthOfFloor =
-          minX === 0 ? canvas.width - 300 : getRandomInt(450, 700);
-        const platform = new GenericObject(
-          {
-            x: minX,
-            y: canvas.height - 80,
-          },
-          {
-            width: widthOfFloor,
-            height: 80,
-          },
-          img,
-          ctx
-        );
-        minX += widthOfFloor + getRandomInt(80, 200);
-        return platform;
-      },
-    };
-    return Array(5).fill('').map(callbackPerType[type]);
   }
 
   private async handleDistance() {

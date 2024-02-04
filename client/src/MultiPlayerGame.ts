@@ -17,6 +17,8 @@ export class MultiPlayerGame extends BaseGame {
     );
   }
 
+  protected handleSubclassLogic(): void {}
+
   updatePlayersState(player: IPlayer) {
     this.players = this.players.map((_player) =>
       _player._id === player._id ? player : _player
