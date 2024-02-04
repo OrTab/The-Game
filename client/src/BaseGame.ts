@@ -166,7 +166,6 @@ export abstract class BaseGame {
       floor.position.x -= this.getMovementDiff(this.floorMovementXDiff);
       floor.draw();
     });
-    this.shouldAddMoreFloors();
   }
 
   private getMovementDiff(diff: number) {
@@ -175,8 +174,6 @@ export abstract class BaseGame {
     }
     return this.keys.left.isPressed ? -diff : diff;
   }
-
-  private shouldAddMoreFloors() {}
 
   private updateVelocity() {
     if (this.isOnFloor || this.isOnPlatform) {
