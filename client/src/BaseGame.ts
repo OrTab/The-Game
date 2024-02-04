@@ -188,7 +188,7 @@ export class BaseGame {
             minX:
               lastFloor.position.x +
               lastFloor.size.width +
-              getRandomInt(120, 350),
+              getRandomInt(80, 100),
             img: OBJECT_IMAGES.platform,
             type: 'floor',
           }) || [];
@@ -367,7 +367,7 @@ export class BaseGame {
       },
       floor() {
         const widthOfFloor =
-          minX === 0 ? canvas.width - 300 : getRandomInt(250, 450);
+          minX === 0 ? canvas.width - 300 : getRandomInt(450, 700);
         const platform = new GenericObject(
           {
             x: minX,
@@ -380,7 +380,7 @@ export class BaseGame {
           img,
           ctx
         );
-        minX += widthOfFloor + getRandomInt(120, 350);
+        minX += widthOfFloor + getRandomInt(80, 200);
         return platform;
       },
     };
