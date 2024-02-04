@@ -1,20 +1,22 @@
-import { Position, Size } from 'types';
+import {
+  GameSettings,
+  IObjectCreationParams,
+  Position,
+  Size,
+  TGameObjectsType,
+} from './types';
+import { getRandomInt } from './utils';
 
 export class GenericObject {
   position: Position;
   size: Size;
   img: HTMLImageElement;
-  ctx: CanvasRenderingContext2D;
-  constructor(
-    position: Position,
-    size: Size,
-    image: HTMLImageElement,
-    ctx: CanvasRenderingContext2D
-  ) {
+  static ctx: CanvasRenderingContext2D;
+  static canvas: HTMLCanvasElement;
+  constructor(position: Position, size: Size, image: HTMLImageElement) {
     this.position = position;
     this.size = size;
     this.img = image;
-    this.ctx = ctx;
   }
 
   draw() {
@@ -23,6 +25,53 @@ export class GenericObject {
       size: { width, height },
       img,
     } = this;
-    this.ctx.drawImage(img, x, y, width, height);
+    GenericObject.ctx.drawImage(img, x, y, width, height);
+  }
+
+  static getGameObjects({
+    minX,
+    maxX = 500,
+    img,
+    type,
+  }: IObjectCreationParams) {
+    const callbackPerType: {
+      [type in TGameObjectsType]: () => GenericObject;
+    } = {
+      platform() {
+        minX = getRandomInt(minX + GameSettings.MinXDiffBetweenPlatform, maxX);
+        maxX += 500;
+        return new GenericObject(
+          {
+            x: minX,
+            y: getRandomInt(320, GenericObject.canvas.height - 250),
+          },
+          {
+            width: getRandomInt(150, 350),
+            height: 30,
+          },
+          img
+        );
+      },
+      floor() {
+        const widthOfFloor =
+          minX === 0
+            ? GenericObject.canvas.width - 300
+            : getRandomInt(450, 700);
+        const platform = new GenericObject(
+          {
+            x: minX,
+            y: GenericObject.canvas.height - 80,
+          },
+          {
+            width: widthOfFloor,
+            height: 80,
+          },
+          img
+        );
+        minX += widthOfFloor + getRandomInt(80, 200);
+        return platform;
+      },
+    };
+    return Array(5).fill('').map(callbackPerType[type]);
   }
 }
