@@ -316,9 +316,6 @@ export abstract class BaseGame {
       await sleep(500);
       this.platformMovementXDiff += 0.1;
       this.floorMovementXDiff += 0.1;
-      await sleep(500);
-      this.platformMovementXDiff += 0.2;
-      this.floorMovementXDiff += 0.2;
       this.gravity += 0.01;
     }
   }

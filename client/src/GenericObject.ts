@@ -43,7 +43,7 @@ export class GenericObject {
         return new GenericObject(
           {
             x: minX,
-            y: getRandomInt(320, GenericObject.canvas.height - 250),
+            y: getRandomInt(320, GenericObject.canvas.height - 100),
           },
           {
             width: getRandomInt(150, 350),
