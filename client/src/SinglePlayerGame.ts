@@ -4,12 +4,12 @@ import { onRestart } from './shared';
 import { INITIAL_PLAYER_PROPERTIES } from './constants';
 import { IPlayer } from 'types';
 
-export class SinglePlayer extends BaseGame {
+export class SinglePlayerGame extends BaseGame {
   constructor() {
     const playerProperties = window.structuredClone<IPlayer>(
       INITIAL_PLAYER_PROPERTIES
     );
-    super(playerProperties, SinglePlayer.handleGameOver);
+    super(playerProperties, SinglePlayerGame.handleGameOver);
     super.animate();
   }
 

@@ -2,7 +2,7 @@ import './styles/style.css';
 import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './constants';
 import { Lobby } from './lobby';
 import { IPlayer } from 'types';
-import { SinglePlayer } from './SinglePlayer';
+import { SinglePlayerGame } from './SinglePlayerGame';
 
 const initMultiPlayerGame = async () => {
   const playerProperties = window.structuredClone<IPlayer>(
@@ -19,5 +19,5 @@ export const initGame = () => {
     return;
   }
 
-  new SinglePlayer();
+  new SinglePlayerGame();
 };
