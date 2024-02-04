@@ -76,9 +76,9 @@ interface TPlayerImage {
   image: PlayerImageType;
   currPlayerImageFrame: number;
   currPlayerImageFramePosition: number;
-  size: Size;
 }
 export interface IPlayerImage {
+  size: Size;
   run: TPlayerImage;
   stand: TPlayerImage;
 }

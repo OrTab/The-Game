@@ -241,8 +241,8 @@ export abstract class BaseGame {
         : GameSettings.PlayerRunImageFrameHeight,
       x,
       y,
-      currentImage.size.height,
-      currentImage.size.width
+      playerImage.size.height,
+      playerImage.size.width
     );
     if (!player) {
       this.updatePlayerImageFrames();

@@ -47,7 +47,7 @@ export class GenericObject {
           },
           {
             width: getRandomInt(150, 350),
-            height: 30,
+            height: 20,
           },
           img
         );
@@ -60,11 +60,11 @@ export class GenericObject {
         const platform = new GenericObject(
           {
             x: minX,
-            y: GenericObject.canvas.height - 80,
+            y: GenericObject.canvas.height - 40,
           },
           {
             width: widthOfFloor,
-            height: 80,
+            height: 40,
           },
           img
         );
