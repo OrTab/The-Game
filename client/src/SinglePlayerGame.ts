@@ -2,7 +2,7 @@ import { Modal } from './components/Modal';
 import { BaseGame } from './BaseGame';
 import { onRestart } from './shared';
 import { INITIAL_PLAYER_PROPERTIES } from './constants';
-import { IPlayer } from 'types';
+import { IPlayer } from './types';
 import { GenericObject } from './GenericObject';
 import { OBJECT_IMAGES } from './images.utils';
 import { getRandomInt } from './utils';
