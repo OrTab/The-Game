@@ -14,7 +14,7 @@ class SocketService {
   private eventBus: EventBus;
   private acknowledgmentTimeoutId: number = 0;
   private wasConnected = false;
-  private unsubscribers: ReturnType<EventBus['on']>[] = [];
+  unsubscribers: Record<string, ReturnType<EventBus['on']>> = {};
 
   constructor() {
     this.eventBus = new EventBus();
@@ -50,7 +50,9 @@ class SocketService {
     this.socket.addEventListener('close', () => {
       console.log('Client connection closed');
       this.isConnected = false;
-      this.unsubscribers.forEach((unsubscriber) => unsubscriber());
+      Object.values(this.unsubscribers).forEach((unsubscriber) =>
+        unsubscriber()
+      );
       this.messageQueue = [];
       clearTimeout(this.acknowledgmentTimeoutId);
     });
@@ -90,12 +92,10 @@ class SocketService {
     this.sendNextMessage();
   }
 
-  private getUnsubscriber(unsubscribe: () => void) {
+  private getUnsubscriber(eventName: string, unsubscribe: () => void) {
     const unsubscriber = () => {
       unsubscribe();
-      this.unsubscribers = this.unsubscribers.filter(
-        (_unsubscribe) => _unsubscribe !== unsubscriber
-      );
+      delete this.unsubscribers[eventName];
     };
     return unsubscriber;
   }
@@ -103,8 +103,19 @@ class SocketService {
   on(eventName: string, callback: (...args: any) => void) {
     const action = () => {
       const unsubscribe = this.eventBus.on(eventName, callback);
-      this.unsubscribers.push(this.getUnsubscriber(unsubscribe));
+      this.unsubscribers[eventName] = this.getUnsubscriber(
+        eventName,
+        unsubscribe
+      );
       this.send({ type: 'subscribe', eventName });
+    };
+    this.handleSocketNotLoaded(action);
+  }
+
+  unsubscribe(eventName: string) {
+    const action = () => {
+      this.send({ type: 'unsubscribe', eventName });
+      this.unsubscribers[eventName]();
     };
     this.handleSocketNotLoaded(action);
   }

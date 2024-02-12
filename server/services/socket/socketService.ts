@@ -169,6 +169,8 @@ class SocketService {
           socket
         );
         socket.unsubscribers[event.eventName] = unsubscribe;
+      } else if (event.type === 'unsubscribe') {
+        socket.unsubscribers[event.eventName]?.();
       } else if (event.type === 'emit') {
         const { data, eventName } = event;
         socket.eventBus.emit(eventName, data);
