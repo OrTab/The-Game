@@ -15,7 +15,7 @@ export class SocketsByEvent {
     };
   }
 
-  getSocketsForEvent(eventName) {
+  getSocketsForEvent(eventName: string) {
     return this.socketsEvents[eventName] || [];
   }
 }

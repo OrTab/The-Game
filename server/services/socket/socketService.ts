@@ -42,7 +42,7 @@ class SocketService {
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'emitToMyself', {
-      value(eventName: string, data) {
+      value(eventName: string, data: any) {
         this.send({ eventName, data });
       },
     });
@@ -91,7 +91,7 @@ class SocketService {
     });
 
     Object.defineProperty(OriginalSocket.prototype, 'sub', {
-      value(eventName: string, callback: (...args) => void) {
+      value(eventName: string, callback: (...args: any[]) => void) {
         this.eventBus.on(eventName, callback);
       },
     });
