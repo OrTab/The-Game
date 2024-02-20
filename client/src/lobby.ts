@@ -2,6 +2,7 @@ import SocketService from './services/SocketService';
 import { SOCKET_EVENTS, SOCKET_ROOMS } from '../../shared/socketEvents';
 import { IPlayer } from './types';
 import { Modal, ModalArguments } from './components/Modal';
+import { MultiPlayerGame } from './MultiPlayerGame';
 
 export class Lobby {
   private modal: Modal | undefined;
@@ -11,6 +12,8 @@ export class Lobby {
     this.player = player;
     SocketService.connect();
     SocketService.joinRoom(SOCKET_ROOMS.LOBBY);
+
+    SocketService.on(SOCKET_EVENTS.MATCH_START, this.onMatchStart.bind(this));
     SocketService.on(
       SOCKET_EVENTS.LOBBY_PLAYERS,
       this.onLobbyPlayers.bind(this)
@@ -20,6 +23,18 @@ export class Lobby {
 
   private get lobbyPlayersForPreview() {
     return this.lobbyPlayers.filter((player) => player._id !== this.player._id);
+  }
+
+  private onMatchStart(matchData: {
+    matchId: string;
+    currentPlayersMatch: IPlayer[];
+  }) {
+    SocketService.leaveRoom(SOCKET_ROOMS.LOBBY);
+    SocketService.unsubscribe(SOCKET_EVENTS.LOBBY_PLAYERS);
+    SocketService.unsubscribe(SOCKET_EVENTS.MATCH_START);
+    this.modal?.hide();
+
+    new MultiPlayerGame(matchData);
   }
 
   private getLobbyPlayersForPreview(): ModalArguments['buttons'] {

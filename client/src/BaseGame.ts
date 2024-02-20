@@ -42,8 +42,7 @@ export abstract class BaseGame {
   private platformMovementXDiff: number =
     GameSettings.InitialPlatformMovementXDiff;
   private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
-  private onGameOverCallback: (() => void) | undefined;
-  constructor(player: IPlayer, gameOverCallback: (() => void) | undefined) {
+  constructor(player: IPlayer) {
     GenericObject.ctx = ctx;
     GenericObject.canvas = canvas;
     this.player = player;
@@ -54,10 +53,12 @@ export abstract class BaseGame {
     window.addEventListener('keyup', this.handleOnKey.bind(this));
     this.resize(true);
     this.initObjects();
-    this.onGameOverCallback = gameOverCallback;
+    this.onMount?.();
   }
 
   protected abstract handleSubclassLogic(): void;
+  protected abstract onMount?(): void;
+  protected abstract handleGameOverLogic(): void;
 
   private setIsKeyPressed({
     side,
@@ -218,7 +219,7 @@ export abstract class BaseGame {
 
   handleGameOver() {
     cancelAnimationFrame(requestAnimationId);
-    this.onGameOverCallback?.();
+    this.handleGameOverLogic();
   }
 
   drawPlayer(player?: IPlayer) {

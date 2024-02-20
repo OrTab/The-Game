@@ -12,8 +12,12 @@ export class SinglePlayerGame extends BaseGame {
     const playerProperties = window.structuredClone<IPlayer>(
       INITIAL_PLAYER_PROPERTIES
     );
-    super(playerProperties, SinglePlayerGame.handleGameOver);
+    super(playerProperties);
     super.animate();
+  }
+
+  protected onMount(): void {
+    console.log('mounted');
   }
 
   protected handleSubclassLogic() {
@@ -65,7 +69,7 @@ export class SinglePlayerGame extends BaseGame {
     }
   }
 
-  static handleGameOver() {
+  handleGameOverLogic() {
     const modal = new Modal({
       title: 'Game Over',
       buttons: [

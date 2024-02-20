@@ -2,7 +2,7 @@ import {
   EmitEvent,
   RoomEvent,
   SocketEvent,
-} from './../../../shared/socket.types.d';
+} from '../../../shared/socket.types';
 import { EventBus } from '../../../shared/EventBus';
 import { SOCKET_EVENTS } from '../../../shared/socketEvents';
 
