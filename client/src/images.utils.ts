@@ -6,30 +6,28 @@ import spriteRunLeft from './assets/spriteRunLeft.png';
 import spriteStandRight from './assets/spriteStandRight.png';
 import spriteStandLeft from './assets/spriteStandLeft.png';
 import { createImage } from './utils';
-import { initGame } from './game';
 
 let numOfLoadedImages = 0;
 
 export const PLAYER_IMAGES = {
-  runRight: createImage(spriteRunRight, shouldInitGame),
-  runLeft: createImage(spriteRunLeft, shouldInitGame),
-  standLeft: createImage(spriteStandLeft, shouldInitGame),
-  standRight: createImage(spriteStandRight, shouldInitGame),
+  runRight: createImage(spriteRunRight, updateLoadedImagesNumber),
+  runLeft: createImage(spriteRunLeft, updateLoadedImagesNumber),
+  standLeft: createImage(spriteStandLeft, updateLoadedImagesNumber),
+  standRight: createImage(spriteStandRight, updateLoadedImagesNumber),
 } as const;
 
 export const OBJECT_IMAGES = {
-  background: createImage(background, shouldInitGame),
-  platform: createImage(platform, shouldInitGame),
+  background: createImage(background, updateLoadedImagesNumber),
+  platform: createImage(platform, updateLoadedImagesNumber),
   // floor :createImage(floor, shouldInitGame)
 };
 
-const numberOfTotalImagesInGame =
+export const NUMBER_OF_TOTAL_IMAGES_IN_GAME =
   Object.keys(PLAYER_IMAGES).length + Object.keys(OBJECT_IMAGES).length;
 
-function shouldInitGame() {
+function updateLoadedImagesNumber() {
   numOfLoadedImages++;
-
-  if (numOfLoadedImages === numberOfTotalImagesInGame) {
-    initGame();
-  }
 }
+
+export const isAllGameImagesLoaded = () =>
+  NUMBER_OF_TOTAL_IMAGES_IN_GAME === numOfLoadedImages;

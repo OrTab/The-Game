@@ -3,6 +3,7 @@ import { INITIAL_PLAYER_PROPERTIES, getInitialPlayerImage } from './constants';
 import { Lobby } from './lobby';
 import { SinglePlayerGame } from './SinglePlayerGame';
 import { IPlayer } from './types';
+import { isAllGameImagesLoaded } from './images.utils';
 
 const initMultiPlayerGame = async () => {
   const playerProperties = window.structuredClone<IPlayer>(
@@ -12,7 +13,7 @@ const initMultiPlayerGame = async () => {
   new Lobby(playerProperties);
 };
 
-export const initGame = () => {
+export const startGameFlow = () => {
   const isMultiPlayerGame = confirm('MultiPlayer match?');
   if (isMultiPlayerGame) {
     initMultiPlayerGame();
@@ -21,3 +22,13 @@ export const initGame = () => {
 
   new SinglePlayerGame();
 };
+
+const initGame = () => {
+  if (isAllGameImagesLoaded()) {
+    startGameFlow();
+  } else {
+    setTimeout(initGame, 200);
+  }
+};
+
+initGame();
