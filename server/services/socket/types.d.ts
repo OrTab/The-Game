@@ -1,6 +1,8 @@
 import type { Socket as OriginalSocket } from 'net';
 import type { EventBus } from '../../../shared/EventBus';
-export interface Socket extends OriginalSocket {
+type KeyValue = Record<string, any>;
+
+export interface Socket extends OriginalSocket, KeyValue {
   id: string;
   emitEvent: (
     eventName: string,

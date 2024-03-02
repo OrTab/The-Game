@@ -1,4 +1,9 @@
-export type SocketEvent = (RoomEvent | SubscribeEvent | EmitEvent) & {
+export type SocketEvent = (
+  | RoomEvent
+  | SubscribeEvent
+  | EmitEvent
+  | UnSubscribeEvent
+) & {
   id?: string;
 };
 
@@ -10,6 +15,11 @@ export type RoomEvent = {
 
 export type SubscribeEvent = {
   type: 'subscribe';
+  eventName: string;
+};
+
+export type UnSubscribeEvent = {
+  type: 'unsubscribe';
   eventName: string;
 };
 

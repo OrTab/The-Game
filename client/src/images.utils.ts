@@ -28,6 +28,7 @@ const numberOfTotalImagesInGame =
 
 function shouldInitGame() {
   numOfLoadedImages++;
+
   if (numOfLoadedImages === numberOfTotalImagesInGame) {
     initGame();
   }

@@ -1,23 +1,45 @@
 import { BaseGame } from './BaseGame';
-import SocketService from 'services/SocketService';
-import { IPlayer } from 'types';
+import SocketService from './services/SocketService';
+import { IPlayer } from './types';
 import { SOCKET_EVENTS } from '../../shared/socketEvents';
 import { INITIAL_PLAYER_PROPERTIES } from './constants';
 
 export class MultiPlayerGame extends BaseGame {
   players: IPlayer[] = [];
-  constructor() {
+  matchId: string;
+
+  constructor({
+    currentPlayersMatch,
+    matchId,
+  }: {
+    matchId: string;
+    currentPlayersMatch: IPlayer[];
+  }) {
     const playerProperties = window.structuredClone<IPlayer>(
       INITIAL_PLAYER_PROPERTIES
     );
-    super(playerProperties, () => {});
+    super(playerProperties);
+    this.players = currentPlayersMatch;
+    this.matchId = matchId;
+    SocketService.joinRoom(this.matchId);
     SocketService.on(
       SOCKET_EVENTS.UPDATE_PLAYER,
       this.updatePlayersState.bind(this)
     );
   }
 
-  protected handleSubclassLogic(): void {}
+  protected onMount(): void {
+    console.log('Mount');
+    this.animate();
+  }
+
+  protected handleSubclassLogic(): void {
+    SocketService.emit(SOCKET_EVENTS.UPDATE_PLAYER, {
+      matchId: this.matchId,
+      player: this.player,
+    });
+    this.drawPlayers();
+  }
 
   updatePlayersState(player: IPlayer) {
     this.players = this.players.map((_player) =>
@@ -30,4 +52,6 @@ export class MultiPlayerGame extends BaseGame {
       this.drawPlayer(player);
     });
   }
+
+  protected handleGameOverLogic(): void {}
 }

@@ -15,7 +15,8 @@ export const extractDataFromFrame = (frameBuffer: Buffer) => {
   const mask = secondsByte & MSB;
   const payloadLength = secondsByte & 0b01111111;
   const opCode = firstByte & 0b00001111;
-  const frameType = FRAME_TYPE_BY_OPCODE[opCode];
+  const frameType =
+    FRAME_TYPE_BY_OPCODE[<keyof typeof FRAME_TYPE_BY_OPCODE>opCode];
   if (frameType === 'CLOSE_FRAME') {
     return [true, null];
   }
@@ -43,17 +44,15 @@ export const extractDataFromFrame = (frameBuffer: Buffer) => {
 
   const payload = frameBuffer.subarray(
     lastByte,
-    lastByte + actualPayloadLength
+    lastByte + Number(actualPayloadLength)
   );
   const finalPayload = Buffer.alloc(payload.length);
 
   for (let i = 0; i < payload.length; i++) {
     let value = payload[i];
     if (maskKey) {
-      //@ts-ignore
       value = payload[i] ^ maskKey[i % 4];
     }
-    //@ts-ignore
     finalPayload[i] = value;
   }
   const data = JSON.parse(finalPayload.toString());
@@ -67,7 +66,7 @@ const generateWebSocketResponseKey = (key: string) => {
   return sha1.digest('base64');
 };
 
-export const getWebSocketFrame = (data) => {
+export const getWebSocketFrame = (data: unknown) => {
   const stringifyData = JSON.stringify(data);
   const payloadBuffer = Buffer.from(stringifyData, 'utf-8');
   const actualPayloadLength = payloadBuffer.byteLength;

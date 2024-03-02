@@ -4,6 +4,7 @@ export const SOCKET_EVENTS = {
   LEAVE_LOBBY: 'leave_lobby',
   LOBBY_PLAYERS: 'lobby_players',
   ACKNOWLEDGMENT: 'acknowledgment',
+  MATCH_START: 'match_start',
 } as const;
 
 export const SOCKET_ROOMS = {

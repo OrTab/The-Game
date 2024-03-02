@@ -42,8 +42,7 @@ export abstract class BaseGame {
   private platformMovementXDiff: number =
     GameSettings.InitialPlatformMovementXDiff;
   private floorMovementXDiff: number = GameSettings.InitialFloorMovementXDiff;
-  private onGameOverCallback: (() => void) | undefined;
-  constructor(player: IPlayer, gameOverCallback: (() => void) | undefined) {
+  constructor(player: IPlayer) {
     GenericObject.ctx = ctx;
     GenericObject.canvas = canvas;
     this.player = player;
@@ -54,12 +53,14 @@ export abstract class BaseGame {
     window.addEventListener('keyup', this.handleOnKey.bind(this));
     this.resize(true);
     this.initObjects();
-    this.onGameOverCallback = gameOverCallback;
+    this.onMount?.();
   }
 
   protected abstract handleSubclassLogic(): void;
+  protected abstract onMount?(): void;
+  protected abstract handleGameOverLogic(): void;
 
-  private set setKeyIsPressed({
+  private setIsKeyPressed({
     side,
     isPressed,
   }: {
@@ -196,7 +197,9 @@ export abstract class BaseGame {
         this.lastPressedKey === 'right' ? 'runRight' : 'runLeft';
     } else if (this.bothKeysPressed || this.keys.right.isPressed) {
       playerImage.run.image = 'runRight';
-    } else if (this.keys.left.isPressed) playerImage.run.image = 'runLeft';
+    } else if (this.keys.left.isPressed) {
+      playerImage.run.image = 'runLeft';
+    }
   }
 
   private updatePlayerPosition() {
@@ -216,7 +219,7 @@ export abstract class BaseGame {
 
   handleGameOver() {
     cancelAnimationFrame(requestAnimationId);
-    this.onGameOverCallback?.();
+    this.handleGameOverLogic();
   }
 
   drawPlayer(player?: IPlayer) {
@@ -358,7 +361,9 @@ export abstract class BaseGame {
         if (this.jumpsCounter >= GameSettings.MaxJumpsWhileInAir) return;
         if (type === 'keydown') {
           this.jumpsCounter++;
-          if (this.jumpsCounter > 0) velocityY -= 4;
+          if (this.jumpsCounter > 0) {
+            velocityY -= 4;
+          }
           this.velocity.y = -velocityY;
         }
         break;
@@ -369,11 +374,11 @@ export abstract class BaseGame {
         break;
       case 'ArrowRight':
         this.lastPressedKey = 'right';
-        this.setKeyIsPressed = { side: 'right', isPressed: type === 'keydown' };
+        this.setIsKeyPressed({ side: 'right', isPressed: type === 'keydown' });
         break;
       case 'ArrowLeft':
         this.lastPressedKey = 'left';
-        this.setKeyIsPressed = { side: 'left', isPressed: type === 'keydown' };
+        this.setIsKeyPressed({ side: 'left', isPressed: type === 'keydown' });
         break;
     }
   }

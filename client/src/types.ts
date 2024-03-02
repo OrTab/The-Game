@@ -44,8 +44,8 @@ export enum GameSettings {
   PlayerStandImageFrameWidth = 177,
   PlayerRunImageFrameHeight = 400,
   PlayerStandImageFrameHeight = 400,
-  InitialFloorMovementXDiff = 4,
-  InitialPlatformMovementXDiff = 4,
+  InitialFloorMovementXDiff = 0,
+  InitialPlatformMovementXDiff = 0,
 }
 
 export interface Position {
