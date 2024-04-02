@@ -36,7 +36,6 @@ class SocketService {
     });
     this.on(SOCKET_EVENTS.ACKNOWLEDGMENT, () => {
       this.gotAcknowledgment = true;
-      clearTimeout(this.acknowledgmentTimeoutId);
       if (this.messageQueue.length > 0) {
         this.sendNextMessage();
       }
@@ -58,12 +57,12 @@ class SocketService {
     });
   }
 
-  private handleSocketNotLoaded(callback: () => void) {
+  private send(callback: () => void) {
     if (this.isSocketOpen) {
       callback();
     } else if (!this.wasConnected) {
       setTimeout(() => {
-        this.handleSocketNotLoaded(callback);
+        this.send(callback);
       }, 100);
     }
   }
@@ -76,14 +75,9 @@ class SocketService {
         this.socket.send(framePayload);
       }
     }
-    clearTimeout(this.acknowledgmentTimeoutId);
-    this.acknowledgmentTimeoutId = setTimeout(
-      this.sendNextMessage.bind(this),
-      100
-    );
   }
 
-  private send(eventData: SocketEvent) {
+  private _send(eventData: SocketEvent) {
     const framePayload = JSON.stringify({
       ...eventData,
       id: crypto.randomUUID(),
@@ -101,30 +95,46 @@ class SocketService {
   }
 
   on(eventName: string, callback: (...args: any) => void) {
-    const action = () => {
-      const unsubscribe = this.eventBus.on(eventName, callback);
-      this.unsubscribers[eventName] = this.getUnsubscriber(
-        eventName,
-        unsubscribe
-      );
-      this.send({ type: 'subscribe', eventName });
-    };
-    this.handleSocketNotLoaded(action);
+    const action = this.createAction({
+      eventData: { type: 'subscribe', eventName },
+      callback: () => {
+        const unsubscribe = this.eventBus.on(eventName, callback);
+        this.unsubscribers[eventName] = this.getUnsubscriber(
+          eventName,
+          unsubscribe
+        );
+      },
+    });
+
+    this.send(action);
   }
 
   unsubscribe(eventName: string) {
-    const action = () => {
-      this.send({ type: 'unsubscribe', eventName });
-      this.unsubscribers[eventName]();
+    const action = this.createAction({
+      eventData: { type: 'unsubscribe', eventName },
+      callback: () => this.unsubscribers[eventName](),
+    });
+    this.send(action);
+  }
+
+  private createAction({
+    eventData,
+    callback,
+  }: {
+    eventData: SocketEvent;
+    callback?: () => void;
+  }) {
+    return () => {
+      this._send(eventData);
+      callback?.();
     };
-    this.handleSocketNotLoaded(action);
   }
 
   private handleSocketRoom(roomId: string, action: RoomEvent['action']) {
-    const _action = () => {
-      this.send({ type: 'room', roomId, action });
-    };
-    this.handleSocketNotLoaded(_action);
+    const _action = this.createAction({
+      eventData: { type: 'room', roomId, action },
+    });
+    this.send(_action);
   }
 
   joinRoom(roomId: string) {
@@ -142,14 +152,14 @@ class SocketService {
   }
 
   emit(eventName: string, data: EmitEvent['data']) {
-    const action = () => {
-      this.send({
+    const action = this.createAction({
+      eventData: {
         type: 'emit',
         eventName,
         data,
-      });
-    };
-    this.handleSocketNotLoaded(action);
+      },
+    });
+    this.send(action);
   }
 }
 

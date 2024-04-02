@@ -29,7 +29,6 @@ export class MultiPlayerGame extends BaseGame {
   }
 
   protected onMount(): void {
-    console.log('Mount');
     this.animate();
   }
 
