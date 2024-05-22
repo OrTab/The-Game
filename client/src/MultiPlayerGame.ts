@@ -21,14 +21,14 @@ export class MultiPlayerGame extends BaseGame {
     super(playerProperties);
     this.players = currentPlayersMatch;
     this.matchId = matchId;
+  }
+
+  protected onMount(): void {
     SocketService.joinRoom(this.matchId);
     SocketService.on(
       SOCKET_EVENTS.UPDATE_PLAYER,
       this.updatePlayersState.bind(this)
     );
-  }
-
-  protected onMount(): void {
     this.animate();
   }
 

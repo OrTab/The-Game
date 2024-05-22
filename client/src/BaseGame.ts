@@ -53,7 +53,9 @@ export abstract class BaseGame {
     window.addEventListener('keyup', this.handleOnKey.bind(this));
     this.resize(true);
     this.initObjects();
-    this.onMount?.();
+    setTimeout(() => {
+      this.onMount?.();
+    }, 0);
   }
 
   protected abstract handleSubclassLogic(): void;

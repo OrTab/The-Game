@@ -14,7 +14,7 @@ const initMultiPlayerGame = async () => {
 };
 
 export const startGameFlow = () => {
-  const isMultiPlayerGame = confirm('MultiPlayer match?');
+  const isMultiPlayerGame = true;
   if (isMultiPlayerGame) {
     initMultiPlayerGame();
     return;
