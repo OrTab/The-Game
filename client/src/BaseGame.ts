@@ -8,8 +8,8 @@ import {
   TLastPressedKeys,
 } from './types';
 import { sleep, runPolyfill } from './utils';
-
 import { GenericObject } from './GenericObject';
+import { EntitiesFactory } from './EntitiesFactory';
 
 let requestAnimationId = 0;
 
@@ -45,7 +45,7 @@ export abstract class BaseGame {
   constructor(player: IPlayer) {
     GenericObject.ctx = ctx;
     GenericObject.canvas = canvas;
-    this.player = player;
+    this.player = EntitiesFactory.extendObject(player);
     window.addEventListener('resize', () => {
       this.resize(false);
     });

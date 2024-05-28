@@ -1,3 +1,4 @@
+import { EntitiesFactory } from './EntitiesFactory';
 import {
   GameSettings,
   IObjectCreationParams,
@@ -40,7 +41,8 @@ export class GenericObject {
       platform() {
         minX = getRandomInt(minX + GameSettings.MinXDiffBetweenPlatform, maxX);
         maxX += 500;
-        return new GenericObject(
+        return EntitiesFactory.createInstance(
+          GenericObject,
           {
             x: minX,
             y: getRandomInt(320, GenericObject.canvas.height - 100),
