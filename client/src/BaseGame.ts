@@ -53,9 +53,6 @@ export abstract class BaseGame {
     window.addEventListener('keyup', this.handleOnKey.bind(this));
     this.resize(true);
     this.initObjects();
-    setTimeout(() => {
-      this.onMount?.();
-    }, 0);
   }
 
   protected abstract handleSubclassLogic(): void;
@@ -80,6 +77,10 @@ export abstract class BaseGame {
   // private get isLeftOrRightPressed() {
   //   return this.keys.right.isPressed || this.keys.left.isPressed;
   // }
+
+  start() {
+    this.onMount?.();
+  }
 
   private get noKeysPressed() {
     return false;
@@ -115,18 +116,18 @@ export abstract class BaseGame {
   }
 
   private initObjects() {
+    // TODO: define game world
+    this.genericObjects[0] = new GenericObject(
+      { x: -1, y: -1 },
+      { height: canvas.height, width: canvas.width },
+      OBJECT_IMAGES.background
+    );
     this.platforms = GenericObject.getGameObjects({
       minX: 0,
       maxX: 500,
       img: OBJECT_IMAGES.platform,
       type: 'platform',
     });
-
-    this.genericObjects[0] = new GenericObject(
-      { x: -1, y: -1 },
-      { height: canvas.height, width: canvas.width },
-      OBJECT_IMAGES.background
-    );
     this.floors = GenericObject.getGameObjects({
       minX: 0,
       img: OBJECT_IMAGES.platform,
@@ -221,6 +222,7 @@ export abstract class BaseGame {
 
   handleGameOver() {
     cancelAnimationFrame(requestAnimationId);
+    window.removeEventListeners({ shouldRemoveAll: true });
     this.handleGameOverLogic();
   }
 

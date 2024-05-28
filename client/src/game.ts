@@ -20,7 +20,8 @@ export const startGameFlow = () => {
     return;
   }
 
-  new SinglePlayerGame();
+  const game = new SinglePlayerGame();
+  game.start();
 };
 
 const initGame = () => {

@@ -34,7 +34,8 @@ export class Lobby {
     SocketService.unsubscribe(SOCKET_EVENTS.MATCH_START);
     this.modal?.hide();
 
-    new MultiPlayerGame(matchData);
+    const game = new MultiPlayerGame(matchData);
+    game.start();
   }
 
   private getLobbyPlayersForPreview(): ModalArguments['buttons'] {

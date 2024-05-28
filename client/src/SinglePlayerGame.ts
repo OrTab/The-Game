@@ -13,11 +13,11 @@ export class SinglePlayerGame extends BaseGame {
       INITIAL_PLAYER_PROPERTIES
     );
     super(playerProperties);
-    super.animate();
   }
 
   protected onMount(): void {
     console.log('mounted');
+    super.animate();
   }
 
   protected handleSubclassLogic() {
