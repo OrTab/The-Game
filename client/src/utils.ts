@@ -123,3 +123,7 @@ export const runPolyfill = () => {
     window.structuredClone = <T>(obj: T) => JSON.parse(JSON.stringify(obj));
   }
 };
+
+export const toPercentage = (value: number, max: number) => (value / max) * 100;
+export const fromPercentage = (percentage: number, max: number) =>
+  percentage / max;

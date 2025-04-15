@@ -18,21 +18,21 @@ declare global {
 
 export type TListenersPerEvent = { [key: string]: EventListener[] };
 
-export type TGameObjectsType = 'floor' | 'platform';
+export type TGameObjectsType = 'floor' | 'platform' | 'background';
 
 export interface IObjectCreationParams {
   minX: number;
   maxX?: number;
   img: HTMLImageElement;
-  type: TGameObjectsType;
+  type: Exclude<TGameObjectsType, 'background'>;
 }
 
 export enum GameSettings {
-  VelocityXDiff = 5,
-  VelocityYDiff = 22,
+  VelocityXDiff = 0.2,
+  VelocityYDiff = 1,
   Gravity = 0.6,
-  MinXDiffBetweenPlatform = 400,
-  MinXDiffBetweenFloor = 250,
+  MinXDiffBetweenPlatform = 30,
+  MinXDiffBetweenFloor = 15,
   MaxJumpsWhileInAir = 2,
   NumberOfFramesToMovePlayerImage = 0,
   NumberOfFramesToIncreaseDistance = 4,

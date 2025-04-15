@@ -3,11 +3,13 @@ import { IPlayer, IPlayerImage } from './types';
 const playerImage = getInitialPlayerImage();
 
 export const PROPERTIES_TO_CALCULATE_SCALE_TO_SCREEN = ['position', 'size'];
+export const REFERENCE_WIDTH = 1000;
+export const REFERENCE_HEIGHT = 1000;
 
 export const INITIAL_PLAYER_PROPERTIES: IPlayer = {
   position: {
-    x: 0.5,
-    y: 0.5,
+    x: 1,
+    y: 1,
   },
   size: playerImage.size,
   playerImage: playerImage,

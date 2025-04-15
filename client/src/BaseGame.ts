@@ -7,15 +7,18 @@ import {
   IPlayer,
   TLastPressedKeys,
 } from './types';
-import { sleep, runPolyfill } from './utils';
+import { sleep, runPolyfill, toPercentage, fromPercentage } from './utils';
 import { GenericObject } from './GenericObject';
 import { EntitiesFactory } from './EntitiesFactory';
+import { REFERENCE_HEIGHT, REFERENCE_WIDTH } from './constants';
 
 let requestAnimationId = 0;
 
 runPolyfill();
 const canvas = document.querySelector('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+const MAX_POSITION_X_TO_GO_LEFT = 10;
 
 export abstract class BaseGame {
   player: IPlayer;
@@ -45,7 +48,8 @@ export abstract class BaseGame {
   constructor(player: IPlayer) {
     GenericObject.ctx = ctx;
     GenericObject.canvas = canvas;
-    this.player = EntitiesFactory.extendObject(player);
+    EntitiesFactory.canvas = canvas;
+    this.player = EntitiesFactory.addScalingProxy(player);
     window.addEventListener('resize', () => {
       this.resize(false);
     });
@@ -91,7 +95,7 @@ export abstract class BaseGame {
     return (
       this.keys.left.isPressed &&
       !this.bothKeysPressed &&
-      this.player.position.x > 150
+      this.player.position.x > MAX_POSITION_X_TO_GO_LEFT
     );
   }
 
@@ -118,16 +122,25 @@ export abstract class BaseGame {
   private initObjects() {
     // TODO: define game world
     this.genericObjects[0] = new GenericObject(
-      { x: -1, y: -1 },
-      { height: canvas.height, width: canvas.width },
-      OBJECT_IMAGES.background
+      {
+        x: -1,
+        y: -1,
+      },
+      {
+        height: canvas.height,
+        width: canvas.width,
+      },
+      OBJECT_IMAGES.background,
+      'background'
     );
+
     this.platforms = GenericObject.getGameObjects({
       minX: 0,
-      maxX: 500,
+      maxX: 40,
       img: OBJECT_IMAGES.platform,
       type: 'platform',
     });
+
     this.floors = GenericObject.getGameObjects({
       minX: 0,
       img: OBJECT_IMAGES.platform,
@@ -154,10 +167,7 @@ export abstract class BaseGame {
 
   private handleFloor() {
     this.floors.forEach((floor, idx) => {
-      if (
-        floor.position.x + floor.size.width + canvas.width <
-        this.player.position.x
-      ) {
+      if (floor.position.x + floor.size.width + canvas.width < 0) {
         setTimeout(() => {
           this.floors.splice(idx, 1);
         }, 0);
@@ -190,7 +200,9 @@ export abstract class BaseGame {
       this.velocity.x = this.velocityXDiff;
     } else if (this.canGoLeft) {
       this.velocity.x = -this.velocityXDiff;
-    } else this.velocity.x = 0;
+    } else {
+      this.velocity.x = 0;
+    }
   }
 
   private handlePlayerImage() {
@@ -246,8 +258,8 @@ export abstract class BaseGame {
       this.noKeysPressed
         ? GameSettings.PlayerStandImageFrameHeight
         : GameSettings.PlayerRunImageFrameHeight,
-      x,
-      y,
+      fromPercentage(x, canvas.width),
+      fromPercenvntage(y, canvas.height),
       playerImage.size.height,
       playerImage.size.width
     );
@@ -284,10 +296,7 @@ export abstract class BaseGame {
 
   private handlePlatforms() {
     this.platforms.forEach((platform, idx) => {
-      if (
-        platform.position.x + platform.size.width + canvas.width <
-        this.player.position.x
-      ) {
+      if (platform.position.x + platform.size.width + canvas.width < 0) {
         setTimeout(() => {
           this.platforms.splice(idx, 1);
         }, 0);
@@ -318,11 +327,11 @@ export abstract class BaseGame {
       this.lastDistanceToIncreaseSpeed
     ) {
       this.lastDistanceToIncreaseSpeed = this.distance;
-      this.platformMovementXDiff += 0.2;
-      this.floorMovementXDiff += 0.2;
+      this.platformMovementXDiff += 0.02;
+      this.floorMovementXDiff += 0.02;
       await sleep(500);
-      this.platformMovementXDiff += 0.1;
-      this.floorMovementXDiff += 0.1;
+      this.platformMovementXDiff += 0.01;
+      this.floorMovementXDiff += 0.01;
       this.gravity += 0.01;
     }
   }

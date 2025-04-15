@@ -1,4 +1,5 @@
 import { EntitiesFactory } from './EntitiesFactory';
+import { REFERENCE_HEIGHT, REFERENCE_WIDTH } from './constants';
 import {
   GameSettings,
   IObjectCreationParams,
@@ -6,18 +7,25 @@ import {
   Size,
   TGameObjectsType,
 } from './types';
-import { getRandomInt } from './utils';
+import { fromPercentage, getRandomInt, toPercentage } from './utils';
 
 export class GenericObject {
   position: Position;
   size: Size;
   img: HTMLImageElement;
   static ctx: CanvasRenderingContext2D;
+  type: TGameObjectsType;
   static canvas: HTMLCanvasElement;
-  constructor(position: Position, size: Size, image: HTMLImageElement) {
+  constructor(
+    position: Position,
+    size: Size,
+    image: HTMLImageElement,
+    type: TGameObjectsType
+  ) {
     this.position = position;
     this.size = size;
     this.img = image;
+    this.type = type;
   }
 
   draw() {
@@ -25,8 +33,19 @@ export class GenericObject {
       position: { x, y },
       size: { width, height },
       img,
+      type,
     } = this;
-    GenericObject.ctx.drawImage(img, x, y, width, height);
+    if (type === 'background') {
+      GenericObject.ctx.drawImage(img, x, y, width, height);
+      return;
+    }
+    GenericObject.ctx.drawImage(
+      img,
+      fromPercentage(x, GenericObject.canvas.width),
+      fromPercentage(y, GenericObject.canvas.height),
+      fromPercentage(width, GenericObject.canvas.width),
+      fromPercentage(height, GenericObject.canvas.height)
+    );
   }
 
   static getGameObjects({
@@ -36,30 +55,41 @@ export class GenericObject {
     type,
   }: IObjectCreationParams) {
     const callbackPerType: {
-      [type in TGameObjectsType]: () => GenericObject;
+      [type in Exclude<TGameObjectsType, 'background'>]: () => GenericObject;
     } = {
       platform() {
         minX = getRandomInt(minX + GameSettings.MinXDiffBetweenPlatform, maxX);
-        maxX += 500;
+        maxX += 40;
         return EntitiesFactory.createInstance(
           GenericObject,
           {
             x: minX,
-            y: getRandomInt(320, GenericObject.canvas.height - 100),
+            y: getRandomInt(
+              GenericObject.canvas.height / 2,
+              GenericObject.canvas.height - 100
+            ),
           },
           {
-            width: getRandomInt(150, 350),
+            width: getRandomInt(
+              GenericObject.canvas.width / 4,
+              GenericObject.canvas.width / 2
+            ),
             height: 20,
           },
-          img
+          img,
+          type
         );
       },
       floor() {
         const widthOfFloor =
           minX === 0
             ? GenericObject.canvas.width - 300
-            : getRandomInt(450, 700);
-        const platform = new GenericObject(
+            : getRandomInt(
+                GenericObject.canvas.width / 5,
+                GenericObject.canvas.width / 2
+              );
+        const platform = EntitiesFactory.createInstance(
+          GenericObject,
           {
             x: minX,
             y: GenericObject.canvas.height - 40,
@@ -68,7 +98,8 @@ export class GenericObject {
             width: widthOfFloor,
             height: 40,
           },
-          img
+          img,
+          type
         );
         minX += widthOfFloor + getRandomInt(80, 200);
         return platform;

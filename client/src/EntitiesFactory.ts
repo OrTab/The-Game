@@ -1,28 +1,31 @@
-import { PROPERTIES_TO_CALCULATE_SCALE_TO_SCREEN } from './constants';
+import {
+  PROPERTIES_TO_CALCULATE_SCALE_TO_SCREEN,
+  REFERENCE_HEIGHT,
+  REFERENCE_WIDTH,
+} from './constants';
 import { Position, Size } from './types';
 
 export class EntitiesFactory {
+  static canvas: HTMLCanvasElement;
   static createInstance<T extends new (...args: any[]) => any>(
-    entity: T,
+    EntityClass: T,
     ...args: any[]
   ): InstanceType<T> {
-    const _entity: InstanceType<T> & {
+    const instance: InstanceType<T> & {
       position: Position;
       size: Size;
-    } = new entity(...args);
-    return this.extendObject(_entity);
+    } = new EntityClass(...args);
+    return this.addScalingProxy(instance);
   }
 
-  static extendObject<T>(_entity: T): T {
+  static addScalingProxy<T>(entity: T): T {
     const handler = {
       get(target: any, property: string) {
         if (PROPERTIES_TO_CALCULATE_SCALE_TO_SCREEN.includes(property)) {
-          target[property].x = target[property].x;
-          target[property].y = target[property].y;
         }
         return target[property];
       },
     };
-    return new Proxy(_entity, handler);
+    return new Proxy(entity, handler);
   }
 }

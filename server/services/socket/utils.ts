@@ -60,9 +60,9 @@ export const extractDataFromFrame = (frameBuffer: Buffer) => {
 };
 
 const generateWebSocketResponseKey = (key: string) => {
-  const magicString = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+  const salt = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
   const sha1 = require('crypto').createHash('sha1');
-  sha1.update(key + magicString);
+  sha1.update(key + salt);
   return sha1.digest('base64');
 };
 
